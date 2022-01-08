@@ -442,6 +442,24 @@ class Video extends Component {
 		return matchChrome !== null
 	}
 
+	getColor = (username) => {
+		let sumChars = 0;
+		for (let i = 0; i < username.length; i++) {
+		  sumChars += username.charCodeAt(i);
+	}
+	
+	const colors = [
+		  "#e67e22", // carrot
+		  "#2ecc71", // emerald
+		  "#3498db", // peter river
+		  "#8e44ad", // wisteria
+		  "#e74c3c", // alizarin
+		  "#1abc9c", // turquoise
+		  "#2c3e50", // midnight blue
+		];
+		return colors[sumChars % colors.length];
+	  };
+
 	render() {
 		if(this.isChrome() === false){
 			return (
@@ -502,7 +520,7 @@ class Video extends Component {
 							<Modal.Body style={{ overflow: "auto", overflowY: "auto", height: "400px", textAlign: "left" }} >
 								{this.state.messages.length > 0 ? this.state.messages.map((item, index) => (
 									<div key={index} style={{textAlign: "left"}}>
-										<p style={{ wordBreak: "break-all" }}><b>{item.sender}</b>: {item.data}</p>
+										<p style={{ wordBreak: "break-all",  color: this.getColor(item.sender) }}><b>{item.sender}</b>: {item.data}</p>
 									</div>
 								)) : <p>No message yet</p>}
 							</Modal.Body>
