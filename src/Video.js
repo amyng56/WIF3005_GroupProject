@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import io from 'socket.io-client'
 import faker from "faker"
-
+import ScrollToBottom from "react-scroll-to-bottom";
 import {IconButton, Badge, Input, Button} from '@material-ui/core'
 import VideocamIcon from '@material-ui/icons/Videocam'
 import VideocamOffIcon from '@material-ui/icons/VideocamOff'
@@ -501,13 +501,15 @@ class Video extends Component {
 							<Modal.Header closeButton>
 								<Modal.Title>Chat Room</Modal.Title>
 							</Modal.Header>
-							<Modal.Body style={{ overflow: "auto", overflowY: "auto", height: "400px", textAlign: "left" }} >
-								{this.state.messages.length > 0 ? this.state.messages.map((item, index) => (
-									<div key={index} style={{textAlign: "left"}}>
-										<p style={{ wordBreak: "break-all" }}><b>{item.sender}</b>: {item.data}</p>
-									</div>
-								)) : <p>No message yet</p>}
-							</Modal.Body>
+							<ScrollToBottom className="message-container">
+                				<Modal.Body>
+									{this.state.messages.length > 0 ? this.state.messages.map((item, index) => (
+										<div key={index} style={{textAlign: "left"}}>
+											<p style={{ wordBreak: "break-all" }}><b>{item.sender}</b>: {item.data}</p>
+										</div>
+									)) : <p>No message yet</p>}	
+								</Modal.Body>
+							</ScrollToBottom>
 							<Modal.Footer className="div-send-msg">
 								<Input placeholder="Message" value={this.state.message} onChange={e => this.handleMessage(e)}  onKeyPress={(e) => {e.key === "Enter" && this.sendMessage();}} />
 								<Button variant="contained" color="primary" onClick={this.sendMessage}>Send</Button>
