@@ -403,8 +403,10 @@ class Video extends Component {
 	handleUsername = (e) => this.setState({ username: e.target.value })
 
 	sendMessage = () => {
+		if (this.state.message !== "") {
 		socket.emit('chat-message', this.state.message, this.state.username)
 		this.setState({ message: "", sender: this.state.username })
+		}
 	}
 
 	copyUrl = () => {
