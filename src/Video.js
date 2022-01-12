@@ -476,7 +476,7 @@ class Video extends Component {
 								{(this.state.video === true) ? <VideocamIcon /> : <VideocamOffIcon />}
 							</IconButton>
 
-							<IconButton style={{ color: "#f44336" }} onClick={this.handleEndCall}>
+							<IconButton style={{ color: "#f44336" }} onClick={() => { if (window.confirm("Do you want to end this call?")) this.handleEndCall()}}>
 								<CallEndIcon />
 							</IconButton>
 
