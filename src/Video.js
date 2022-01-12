@@ -507,7 +507,7 @@ class Video extends Component {
 								)) : <p>No message yet</p>}
 							</Modal.Body>
 							<Modal.Footer className="div-send-msg">
-								<Input placeholder="Message" value={this.state.message} onChange={e => this.handleMessage(e)} />
+								<Input placeholder="Message" value={this.state.message} onChange={e => this.handleMessage(e)}  onKeyPress={(e) => {e.key === "Enter" && this.sendMessage();}} />
 								<Button variant="contained" color="primary" onClick={this.sendMessage}>Send</Button>
 							</Modal.Footer>
 						</Modal>
