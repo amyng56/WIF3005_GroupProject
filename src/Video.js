@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import io from 'socket.io-client'
 import faker from "faker"
-
+import ScrollToBottom from "react-scroll-to-bottom";
 import {IconButton, Badge, Input, Button} from '@material-ui/core'
 import VideocamIcon from '@material-ui/icons/Videocam'
 import VideocamOffIcon from '@material-ui/icons/VideocamOff'
@@ -403,8 +403,10 @@ class Video extends Component {
 	handleUsername = (e) => this.setState({ username: e.target.value })
 
 	sendMessage = () => {
+		if (this.state.message !== "") {
 		socket.emit('chat-message', this.state.message, this.state.username)
 		this.setState({ message: "", sender: this.state.username })
+		}
 	}
 
 	copyUrl = () => {
@@ -492,7 +494,7 @@ class Video extends Component {
 								{(this.state.video === true) ? <VideocamIcon /> : <VideocamOffIcon />}
 							</IconButton>
 
-							<IconButton style={{ color: "#f44336" }} onClick={this.handleEndCall}>
+							<IconButton style={{ color: "#f44336" }} onClick={() => { if (window.confirm("Do you want to end this call?")) this.handleEndCall()}}>
 								<CallEndIcon />
 							</IconButton>
 
@@ -517,15 +519,17 @@ class Video extends Component {
 							<Modal.Header closeButton>
 								<Modal.Title>Chat Room</Modal.Title>
 							</Modal.Header>
-							<Modal.Body style={{ overflow: "auto", overflowY: "auto", height: "400px", textAlign: "left" }} >
-								{this.state.messages.length > 0 ? this.state.messages.map((item, index) => (
-									<div key={index} style={{textAlign: "left"}}>
-										<p style={{ wordBreak: "break-all",  color: this.getColor(item.sender) }}><b>{item.sender}</b>: {item.data}</p>
-									</div>
-								)) : <p>No message yet</p>}
-							</Modal.Body>
+							<ScrollToBottom className="message-container">
+                				<Modal.Body>
+									{this.state.messages.length > 0 ? this.state.messages.map((item, index) => (
+										<div key={index} style={{textAlign: "left"}}>
+											<p style={{ wordBreak: "break-all", color: this.getColor(item.sender) }}><b>{item.sender}</b>: {item.data}</p>
+										</div>
+									)) : <p>No message yet</p>}	
+								</Modal.Body>
+							</ScrollToBottom>
 							<Modal.Footer className="div-send-msg">
-								<Input placeholder="Message" value={this.state.message} onChange={e => this.handleMessage(e)} />
+								<Input placeholder="Message" value={this.state.message} onChange={e => this.handleMessage(e)}  onKeyPress={(e) => {e.key === "Enter" && this.sendMessage();}} />
 								<Button variant="contained" color="primary" onClick={this.sendMessage}>Send</Button>
 							</Modal.Footer>
 						</Modal>
