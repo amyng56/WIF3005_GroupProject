@@ -12,6 +12,7 @@
     "bootstrap": "^4.4.1",
     "concurrently": "^5.1.0",
     "cors": "^2.8.5",
+    "create-app-react": "^1.0.6",
     "express": "^4.17.1",
     "faker": "^4.1.0",
     "nodemon": "^2.0.2",
@@ -54,5 +55,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "engines": {
+    "node": "^12.18.12",
+    "npm": "^7.20.5"
   }
 }
