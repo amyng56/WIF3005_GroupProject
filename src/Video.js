@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component, useEffect } from 'react'
 import io from 'socket.io-client'
 import faker from "faker"
 import ScrollToBottom from "react-scroll-to-bottom";
@@ -33,6 +33,14 @@ var socket = null
 var socketId = null
 var elms = 0
 
+//subtitle Speech Recognition
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+const mic = new SpeechRecognition();
+
+mic.continuous = true
+mic.interimResults = true
+mic.lang = 'en-US'
+
 class Video extends Component {
 	constructor(props) {
 		super(props)
@@ -53,10 +61,54 @@ class Video extends Component {
 			newmessages: 0,
 			askForUsername: true,
 			username: faker.internet.userName(),
+			transcript: null,
 		}
 		connections = {}
 
 		this.getPermissions()
+	}
+
+	componentDidUpdate = (prevProps, prevState, snapshot) => {
+		let isMount = true
+		if (prevState.audio != this.state.audio){
+			this.handleListen()
+		}
+	}
+
+	handleListen = () => {
+		if (this.state.audio) {
+			mic.start()
+			mic.onend = () => {
+				console.log('continue..')
+				mic.start()
+			}
+		} else {
+			mic.stop()
+			mic.onend = () => {
+				this.setState({transcript: null})
+				console.log('Stopped Mic on Click')
+
+			}
+		}
+		mic.onstart = () => {
+			console.log('Mics on')
+		}
+
+		mic.onresult = event => {
+			const transcript = Array.from(event.results)
+				.map(result => result[0])
+				.map(result => result.transcript)
+				.join('')
+			console.log(transcript)
+			this.setState({transcript: transcript})
+			mic.onerror = event => {
+				console.log(event.error)
+			}
+		}
+
+		mic.onerror = error => {
+			console.log(error)
+		}
 	}
 
 	getPermissions = async () => {
@@ -466,7 +518,7 @@ class Video extends Component {
 
 						<div style={{ justifyContent: "center", textAlign: "center", paddingTop: "40px" }}>
 							<video id="my-video" ref={this.localVideoref} autoPlay muted style={{
-								borderStyle: "solid",borderColor: "#bdbdbd",objectFit: "fill",width: "60%",height: "30%"}}></video>
+								borderStyle: "solid",borderColor: "#bdbdbd",objectFit: "fill",width: "60%",height: "30%"}}/>
 						</div>
 					</div>
 					:
@@ -518,7 +570,7 @@ class Video extends Component {
 
 						<div className="container">
 							<div style={{ paddingTop: "20px" }}>
-								<Input value={window.location.href} disable="true"></Input>
+								<Input value={window.location.href} disable="true"/>
 								<Button style={{backgroundColor: "#3f51b5",color: "whitesmoke",marginLeft: "20px",
 									marginTop: "10px",width: "120px",fontSize: "10px"
 								}} onClick={this.copyUrl}>Copy invite link</Button>
@@ -527,11 +579,16 @@ class Video extends Component {
 							<Row id="main" className="flex-container" style={{ margin: 0, padding: 0 }}>
 								<video id="my-video" ref={this.localVideoref} autoPlay muted style={{
 									borderStyle: "solid",borderColor: "#bdbdbd",margin: "10px",objectFit: "fill",
-									width: "100%",height: "100%"}}></video>
+									width: "100%",height: "100%"}}/>
 							</Row>
 						</div>
 					</div>
 				}
+				<div className="subtitles-menu" hidden={this.state.transcript==null}>
+					<span>
+						{this.state.transcript}
+					</span>
+				</div>
 			</div>
 		)
 	}

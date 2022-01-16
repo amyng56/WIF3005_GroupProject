@@ -43,4 +43,12 @@ body {
     height: 400px;
     text-align: left;
   }
-  
+
+.subtitles-menu {
+    position:absolute;
+    bottom:20%;
+    background:#fff;
+    color: black;
+    width:1000px;
+    height: 100px;
+}
