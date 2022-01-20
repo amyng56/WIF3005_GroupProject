@@ -19,6 +19,7 @@ import { Row } from 'reactstrap'
 import Modal from 'react-bootstrap/Modal'
 import 'bootstrap/dist/css/bootstrap.css'
 import "./Video.css"
+import InputEmoji from 'react-input-emoji'
 
 const server_url = process.env.NODE_ENV === 'production' ? 'https://video.sebastienbiollo.com' : "http://localhost:4001"
 
@@ -454,86 +455,215 @@ class Video extends Component {
 			)
 		}
 		return (
-			<div>
-				{this.state.askForUsername === true ?
-					<div>
-						<div style={{background: "white", width: "30%", height: "auto", padding: "20px", minWidth: "400px",
-								textAlign: "center", margin: "auto", marginTop: "50px", justifyContent: "center"}}>
-							<p style={{ margin: 0, fontWeight: "bold", paddingRight: "50px" }}>Set your username</p>
-							<Input placeholder="Username" value={this.state.username} onChange={e => this.handleUsername(e)} />
-							<Button variant="contained" color="primary" onClick={this.connect} style={{ margin: "20px" }}>Connect</Button>
-						</div>
+      <div>
+        {this.state.askForUsername === true ? (
+          <div>
+            <div
+              style={{
+                background: "white",
+                width: "30%",
+                height: "auto",
+                padding: "20px",
+                minWidth: "400px",
+                textAlign: "center",
+                margin: "auto",
+                marginTop: "50px",
+                justifyContent: "center",
+              }}
+            >
+              <p
+                style={{ margin: 0, fontWeight: "bold", paddingRight: "50px" }}
+              >
+                Set your username
+              </p>
+              <Input
+                placeholder="Username"
+                value={this.state.username}
+                onChange={(e) => this.handleUsername(e)}
+              />
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={this.connect}
+                style={{ margin: "20px" }}
+              >
+                Connect
+              </Button>
+            </div>
 
-						<div style={{ justifyContent: "center", textAlign: "center", paddingTop: "40px" }}>
-							<video id="my-video" ref={this.localVideoref} autoPlay muted style={{
-								borderStyle: "solid",borderColor: "#bdbdbd",objectFit: "fill",width: "60%",height: "30%"}}></video>
-						</div>
-					</div>
-					:
-					<div>
-						<div className="btn-down" style={{ backgroundColor: "whitesmoke", color: "whitesmoke", textAlign: "center" }}>
-							<IconButton style={{ color: "#424242" }} onClick={this.handleVideo}>
-								{(this.state.video === true) ? <VideocamIcon /> : <VideocamOffIcon />}
-							</IconButton>
+            <div
+              style={{
+                justifyContent: "center",
+                textAlign: "center",
+                paddingTop: "40px",
+              }}
+            >
+              <video
+                id="my-video"
+                ref={this.localVideoref}
+                autoPlay
+                muted
+                style={{
+                  borderStyle: "solid",
+                  borderColor: "#bdbdbd",
+                  objectFit: "fill",
+                  width: "60%",
+                  height: "30%",
+                }}
+              ></video>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div
+              className="btn-down"
+              style={{
+                backgroundColor: "whitesmoke",
+                color: "whitesmoke",
+                textAlign: "center",
+              }}
+            >
+              <IconButton
+                style={{ color: "#424242" }}
+                onClick={this.handleVideo}
+              >
+                {this.state.video === true ? (
+                  <VideocamIcon />
+                ) : (
+                  <VideocamOffIcon />
+                )}
+              </IconButton>
 
-							<IconButton style={{ color: "#f44336" }} onClick={() => { if (window.confirm("Do you want to end this call?")) this.handleEndCall()}}>
-								<CallEndIcon />
-							</IconButton>
+              <IconButton
+                style={{ color: "#f44336" }}
+                onClick={() => {
+                  if (window.confirm("Do you want to end this call?"))
+                    this.handleEndCall();
+                }}
+              >
+                <CallEndIcon />
+              </IconButton>
 
-							<IconButton style={{ color: "#424242" }} onClick={this.handleAudio}>
-								{this.state.audio === true ? <MicIcon /> : <MicOffIcon />}
-							</IconButton>
+              <IconButton
+                style={{ color: "#424242" }}
+                onClick={this.handleAudio}
+              >
+                {this.state.audio === true ? <MicIcon /> : <MicOffIcon />}
+              </IconButton>
 
-							{this.state.screenAvailable === true ?
-								<IconButton style={{ color: "#424242" }} onClick={this.handleScreen}>
-									{this.state.screen === true ? <ScreenShareIcon /> : <StopScreenShareIcon />}
-								</IconButton>
-								: null}
+              {this.state.screenAvailable === true ? (
+                <IconButton
+                  style={{ color: "#424242" }}
+                  onClick={this.handleScreen}
+                >
+                  {this.state.screen === true ? (
+                    <ScreenShareIcon />
+                  ) : (
+                    <StopScreenShareIcon />
+                  )}
+                </IconButton>
+              ) : null}
 
-							<Badge badgeContent={this.state.newmessages} max={999} color="secondary" onClick={this.openChat}>
-								<IconButton style={{ color: "#424242" }} onClick={this.openChat}>
-									<ChatIcon />
-								</IconButton>
-							</Badge>
-						</div>
+              <Badge
+                badgeContent={this.state.newmessages}
+                max={999}
+                color="secondary"
+                onClick={this.openChat}
+              >
+                <IconButton
+                  style={{ color: "#424242" }}
+                  onClick={this.openChat}
+                >
+                  <ChatIcon />
+                </IconButton>
+              </Badge>
+            </div>
 
-						<Modal show={this.state.showModal} onHide={this.closeChat} style={{ zIndex: "999999" }}>
-							<Modal.Header closeButton>
-								<Modal.Title>Chat Room</Modal.Title>
-							</Modal.Header>
-							<ScrollToBottom className="message-container">
-                				<Modal.Body>
-									{this.state.messages.length > 0 ? this.state.messages.map((item, index) => (
-										<div key={index} style={{textAlign: "left"}}>
-											<p style={{ wordBreak: "break-all" }}><b>{item.sender}</b>: {item.data}</p>
-										</div>
-									)) : <p>No message yet</p>}	
-								</Modal.Body>
-							</ScrollToBottom>
-							<Modal.Footer className="div-send-msg">
-								<Input placeholder="Message" value={this.state.message} onChange={e => this.handleMessage(e)}  onKeyPress={(e) => {e.key === "Enter" && this.sendMessage();}} />
-								<Button variant="contained" color="primary" onClick={this.sendMessage}>Send</Button>
-							</Modal.Footer>
-						</Modal>
+            <Modal
+              show={this.state.showModal}
+              onHide={this.closeChat}
+              style={{ zIndex: "999999" }}
+            >
+              <Modal.Header closeButton>
+                <Modal.Title>Chat Room</Modal.Title>
+              </Modal.Header>
+              <ScrollToBottom className="message-container">
+                <Modal.Body>
+                  {this.state.messages.length > 0 ? (
+                    this.state.messages.map((item, index) => (
+                      <div key={index} style={{ textAlign: "left" }}>
+                        <p style={{ wordBreak: "break-all" }}>
+                          <b>{item.sender}</b>: {item.data}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p>No message yet</p>
+                  )}
+                </Modal.Body>
+              </ScrollToBottom>
+              <Modal.Footer className="div-send-msg">
+                {/* <Input placeholder="Message" value={this.state.message} onChange={e => this.handleMessage(e)}  onKeyPress={(e) => {e.key === "Enter" && this.sendMessage();}} /> */}
+                <InputEmoji
+                  value={this.state.message}
+                  onChange={(e) => this.setState({ message: e })}
+                  onEnter={() => this.sendMessage()}
+                  cleanOnEnter
+                  placeholder="Type a message"
+                />
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={this.sendMessage}
+                >
+                  Send
+                </Button>
+              </Modal.Footer>
+            </Modal>
 
-						<div className="container">
-							<div style={{ paddingTop: "20px" }}>
-								<Input value={window.location.href} disable="true"></Input>
-								<Button style={{backgroundColor: "#3f51b5",color: "whitesmoke",marginLeft: "20px",
-									marginTop: "10px",width: "120px",fontSize: "10px"
-								}} onClick={this.copyUrl}>Copy invite link</Button>
-							</div>
+            <div className="container">
+              <div style={{ paddingTop: "20px" }}>
+                <Input value={window.location.href} disable="true"></Input>
+                <Button
+                  style={{
+                    backgroundColor: "#3f51b5",
+                    color: "whitesmoke",
+                    marginLeft: "20px",
+                    marginTop: "10px",
+                    width: "120px",
+                    fontSize: "10px",
+                  }}
+                  onClick={this.copyUrl}
+                >
+                  Copy invite link
+                </Button>
+              </div>
 
-							<Row id="main" className="flex-container" style={{ margin: 0, padding: 0 }}>
-								<video id="my-video" ref={this.localVideoref} autoPlay muted style={{
-									borderStyle: "solid",borderColor: "#bdbdbd",margin: "10px",objectFit: "fill",
-									width: "100%",height: "100%"}}></video>
-							</Row>
-						</div>
-					</div>
-				}
-			</div>
-		)
+              <Row
+                id="main"
+                className="flex-container"
+                style={{ margin: 0, padding: 0 }}
+              >
+                <video
+                  id="my-video"
+                  ref={this.localVideoref}
+                  autoPlay
+                  muted
+                  style={{
+                    borderStyle: "solid",
+                    borderColor: "#bdbdbd",
+                    margin: "10px",
+                    objectFit: "fill",
+                    width: "100%",
+                    height: "100%",
+                  }}
+                ></video>
+              </Row>
+            </div>
+          </div>
+        )}
+      </div>
+    );
 	}
 }
 
