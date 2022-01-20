@@ -171,6 +171,11 @@ class Video extends Component {
 					.then((stream) => {})
 					.catch((e) => console.log(e))
 			}
+		} else {
+			try {
+				let tracks = this.localVideoref.current.srcObject.getTracks()
+				tracks.forEach(track => track.stop())
+			} catch (e) {}
 		}
 	}
 
