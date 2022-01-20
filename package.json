@@ -12,6 +12,7 @@
     "bootstrap": "^4.4.1",
     "concurrently": "^5.1.0",
     "cors": "^2.8.5",
+    "create-app-react": "^1.0.6",
     "express": "^4.17.1",
     "faker": "^4.1.0",
     "nodemon": "^2.0.2",
@@ -35,6 +36,7 @@
     "xss": "^1.0.8"
   },
   "scripts": {
+    "start": "concurrently -n 'server,client' -c 'red,green'  \"nodemon app.js\" \"SET NODE_ENV=dev PORT=8000 & react-scripts start\"",
     "dev": "concurrently -n 'server,client' -c 'red,green'  \"nodemon app.js\" \"SET NODE_ENV=dev PORT=8000 & react-scripts start\"",
     "server": "NODE_ENV=production nodemon app.js",
     "build": "react-scripts build",
@@ -55,5 +57,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "engines": {
+    "node": "^12.18.12",
+    "npm": "^7.20.5"
   }
 }
