@@ -399,7 +399,14 @@ class Video extends Component {
 
 	addMessage = (data, sender, socketIdSender) => {
 		this.setState(prevState => ({
-			messages: [...prevState.messages, { "sender": sender, "data": data }],
+			messages: [...prevState.messages, {
+				"sender": sender,
+				"data": data,
+				"time":
+					new Date(Date.now()).getHours() +
+					":" +
+					new Date(Date.now()).getMinutes(),
+			}],
 		}))
 		if (socketIdSender !== socketId) {
 			this.setState({ newmessages: this.state.newmessages + 1 })
@@ -596,11 +603,20 @@ class Video extends Component {
                 <Modal.Body>
                   {this.state.messages.length > 0 ? (
                     this.state.messages.map((item, index) => (
-                      <div key={index} style={{ textAlign: "left" }}>
-                        <p style={{ wordBreak: "break-all" }}>
-                          <b>{item.sender}</b>: {item.data}
-                        </p>
-                      </div>
+					<div
+						className="message"
+						id={this.state.username === item.sender ? "you" : "other"}
+					>
+						<div>
+							<div className="message-content">
+								<p>{item.data}</p>
+							</div>
+							<div className="message-meta">
+								<p id="time">{item.time}</p>
+								<p id="author">{item.sender}</p>
+							</div>
+						</div>
+					</div>
                     ))
                   ) : (
                     <p>No message yet</p>
