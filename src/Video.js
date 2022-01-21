@@ -20,6 +20,14 @@ import Modal from 'react-bootstrap/Modal'
 import 'bootstrap/dist/css/bootstrap.css'
 import "./Video.css"
 import InputEmoji from 'react-input-emoji'
+import {
+	FacebookShareButton,
+	TelegramShareButton,
+	WhatsappShareButton,
+	FacebookIcon,
+	TelegramIcon,
+	WhatsappIcon,
+  } from "react-share";
 
 const server_url = process.env.NODE_ENV === 'production' ? 'https://video.sebastienbiollo.com' : "http://localhost:4001"
 
@@ -661,14 +669,14 @@ class Video extends Component {
             </Modal>
 
             <div className="container">
-              <div style={{ paddingTop: "20px" }}>
+              <div className="share">
                 <Input value={window.location.href} disable="true"></Input>
                 <Button
                   style={{
                     backgroundColor: "#3f51b5",
                     color: "whitesmoke",
                     marginLeft: "20px",
-                    marginTop: "10px",
+					marginRight: "20px",
                     width: "120px",
                     fontSize: "10px",
                   }}
@@ -676,6 +684,26 @@ class Video extends Component {
                 >
                   Copy invite link
                 </Button>
+                  <FacebookShareButton
+				  	  url="https://sme-video-meeting.herokuapp.com/"
+                      quote={"Join meeting: " + window.location.href + "\nLink: " }
+                    >
+                      <FacebookIcon size={32} round={true} style={{margin:"3px"}} />
+                  </FacebookShareButton>
+            
+                  <TelegramShareButton
+                      url="https://sme-video-meeting.herokuapp.com/"
+                      title={"Join meeting: " + window.location.href + "\nLink: " }
+                    >
+                      <TelegramIcon size={32} round={true}  style={{margin:"3px"}}  />
+                  </TelegramShareButton>
+
+                  <WhatsappShareButton
+                    url="https://sme-video-meeting.herokuapp.com/"
+                    title={"Join meeting: " + window.location.href + "\nLink: " }
+                  >
+                    <WhatsappIcon size={32} round={true}  style={{margin:"3px"}} />
+                  </WhatsappShareButton>
               </div>
 
               <Row
