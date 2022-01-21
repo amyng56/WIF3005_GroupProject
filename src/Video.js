@@ -669,14 +669,14 @@ class Video extends Component {
             </Modal>
 
             <div className="container">
-              <div style={{ paddingTop: "20px" }}>
+              <div className="share">
                 <Input value={window.location.href} disable="true"></Input>
                 <Button
                   style={{
                     backgroundColor: "#3f51b5",
                     color: "whitesmoke",
                     marginLeft: "20px",
-                    marginTop: "10px",
+					marginRight: "20px",
                     width: "120px",
                     fontSize: "10px",
                   }}
@@ -684,7 +684,6 @@ class Video extends Component {
                 >
                   Copy invite link
                 </Button>
-				<div className="shares">
                   <FacebookShareButton
 				  	  url="https://sme-video-meeting.herokuapp.com/"
                       quote={"Join meeting: " + window.location.href + "\nLink: " }
@@ -705,7 +704,6 @@ class Video extends Component {
                   >
                     <WhatsappIcon size={32} round={true}  style={{margin:"3px"}} />
                   </WhatsappShareButton>
-                </div>
               </div>
 
               <Row

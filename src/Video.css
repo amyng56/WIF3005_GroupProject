@@ -23,6 +23,14 @@ body {
     text-align: center;
 }
 
+.share {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding-top: 20px;
+    
+}
+
 .div-send-msg {
     display: flex;
     align-items: center;
