@@ -44,8 +44,8 @@ class Video extends Component {
 		this.audioAvailable = false
 
 		this.state = {
-			video: false,
-			audio: false,
+			video: true,
+			audio: true,
 			screen: false,
 			showModal: false,
 			screenAvailable: false,
@@ -90,8 +90,8 @@ class Video extends Component {
 
 	getMedia = () => {
 		this.setState({
-			video: this.videoAvailable,
-			audio: this.audioAvailable
+			// video: this.videoAvailable,
+			// audio: this.audioAvailable,
 		}, () => {
 			this.getUserMedia()
 			this.connectToSocketServer()
@@ -501,6 +501,24 @@ class Video extends Component {
               >
                 Connect
               </Button>
+				<div>
+					<IconButton
+						style={{ color: "#424242" }}
+						onClick={this.handleVideo}
+					>
+						{this.state.video === true ? (
+							<VideocamIcon />
+						) : (
+							<VideocamOffIcon />
+						)}
+					</IconButton>
+					<IconButton
+						style={{ color: "#424242" }}
+						onClick={this.handleAudio}
+					>
+						{this.state.audio === true ? <MicIcon /> : <MicOffIcon />}
+					</IconButton>
+				</div>
             </div>
 
             <div
