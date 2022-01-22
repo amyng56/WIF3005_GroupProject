@@ -1,8 +1,8 @@
-import React, { Component } from 'react'
+import React, {Component, useEffect, useState} from 'react'
 import io from 'socket.io-client'
 import faker from "faker"
 import ScrollToBottom from "react-scroll-to-bottom";
-import {IconButton, Badge, Input, Button} from '@material-ui/core'
+import {Badge, Button, IconButton, Input} from '@material-ui/core'
 import VideocamIcon from '@material-ui/icons/Videocam'
 import VideocamOffIcon from '@material-ui/icons/VideocamOff'
 import MicIcon from '@material-ui/icons/Mic'
@@ -13,13 +13,14 @@ import CallEndIcon from '@material-ui/icons/CallEnd'
 import ChatIcon from '@material-ui/icons/Chat'
 import { animateScroll } from "react-scroll";
 
-import { message } from 'antd'
+import {message} from 'antd'
 import 'antd/dist/antd.css'
 
-import { Row } from 'reactstrap'
+import {Row} from 'reactstrap'
 import Modal from 'react-bootstrap/Modal'
 import 'bootstrap/dist/css/bootstrap.css'
 import "./Video.css"
+import { useLazyTranslate } from 'react-google-translate'
 import InputEmoji from 'react-input-emoji'
 import {
 	FacebookShareButton,
@@ -50,6 +51,16 @@ const mic = new SpeechRecognition();
 mic.continuous = true
 mic.interimResults = true
 mic.lang = 'ms-MY'
+const [language] = useState('zh-CN');
+const [translate, { data, loading }] = useLazyTranslate({
+    language
+})
+
+useEffect(() => {
+    if (this.state.transcript) {
+        translate(this.state.transcript, language);
+    }
+}, [translate, this.state.transcript])
 
 const height = 60
 const width = window.innerWidth * 0.9
@@ -375,7 +386,7 @@ class Video extends Component {
 			socket.on('user-joined', (id, clients) => {
 				clients.forEach((socketListId) => {
 					connections[socketListId] = new RTCPeerConnection(peerConnectionConfig)
-					// Wait for their ice candidate       
+					// Wait for their ice candidate
 					connections[socketListId].onicecandidate = function (event) {
 						if (event.candidate != null) {
 							socket.emit('signal', socketListId, JSON.stringify({ 'ice': event.candidate }))
@@ -423,11 +434,11 @@ class Video extends Component {
 				if (id === socketId) {
 					for (let id2 in connections) {
 						if (id2 === socketId) continue
-						
+
 						try {
 							connections[id2].addStream(window.localStream)
 						} catch(e) {}
-			
+
 						connections[id2].createOffer().then((description) => {
 							connections[id2].setLocalDescription(description)
 								.then(() => {
@@ -776,9 +787,10 @@ class Video extends Component {
                 />
               </Row>
 
-							<div id="subtitle-container" className="subtitles-menu text-pattern" hidden={this.state.transcript==null} style={{ "height": height, "width": width, "marginLeft":margin, "marginRight": margin }} ref={this.subtitleRef}>
-								{this.state.transcript}
-							</div>
+				<div id="subtitle-container" className="subtitles-menu text-pattern" hidden={this.state.transcript==null} style={{ "height": height, "width": width, "marginLeft":margin, "marginRight": margin }} ref={this.subtitleRef}>
+					{this.state.transcript}
+					<p><b>{loading ? 'Loading...' : data}</b></p>
+				</div>
 
             </div>
           </div>
