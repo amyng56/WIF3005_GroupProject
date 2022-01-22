@@ -11,6 +11,7 @@ import ScreenShareIcon from '@material-ui/icons/ScreenShare'
 import StopScreenShareIcon from '@material-ui/icons/StopScreenShare'
 import CallEndIcon from '@material-ui/icons/CallEnd'
 import ChatIcon from '@material-ui/icons/Chat'
+import { animateScroll } from "react-scroll";
 
 import { message } from 'antd'
 import 'antd/dist/antd.css'
@@ -42,11 +43,24 @@ var socket = null
 var socketId = null
 var elms = 0
 
+//subtitle Speech Recognition
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+const mic = new SpeechRecognition();
+
+mic.continuous = true
+mic.interimResults = true
+mic.lang = 'ms-MY'
+
+const height = 60
+const width = window.innerWidth * 0.9
+const margin = window.innerWidth*0.05
+
 class Video extends Component {
 	constructor(props) {
 		super(props)
 
 		this.localVideoref = React.createRef()
+		this.subtitleRef = React.createRef()
 
 		this.videoAvailable = false
 		this.audioAvailable = false
@@ -62,10 +76,63 @@ class Video extends Component {
 			newmessages: 0,
 			askForUsername: true,
 			username: faker.internet.userName(),
+			transcript: null,
 		}
 		connections = {}
 
 		this.getPermissions()
+	}
+
+	scrollToBottom = () => {
+		animateScroll.scrollToBottom(
+			{
+				containerId: 'subtitle-container',
+				smooth: 'easeOutCubic'
+			}
+		)
+	}
+
+	componentDidUpdate = (prevProps, prevState, snapshot) => {
+		let isMount = true
+		if (prevState.audio != this.state.audio){
+			this.handleListen()
+		}
+	}
+
+	handleListen = () => {
+		if (this.state.audio) {
+			mic.start()
+			mic.onend = () => {
+				console.log('continue..')
+				mic.start()
+			}
+		} else {
+			mic.stop()
+			mic.onend = () => {
+				this.setState({transcript: null})
+				console.log('Stopped Mic on Click')
+
+			}
+		}
+		mic.onstart = () => {
+			console.log('Mics on')
+		}
+
+		mic.onresult = event => {
+			const transcript = Array.from(event.results)
+				.map(result => result[0])
+				.map(result => result.transcript)
+				.join('')
+			console.log(transcript)
+			this.setState({transcript: transcript}, this.scrollToBottom(transcript))
+			mic.onerror = event => {
+				console.log(event.error)
+			}
+		}
+
+		mic.onerror = error => {
+			console.log(error)
+		}
 	}
 
 	getPermissions = async () => {
@@ -492,24 +559,24 @@ class Video extends Component {
               >
                 Connect
               </Button>
-				<div>
-					<IconButton
-						style={{ color: "#424242" }}
-						onClick={this.handleVideo}
-					>
-						{this.state.video === true ? (
-							<VideocamIcon />
-						) : (
-							<VideocamOffIcon />
-						)}
-					</IconButton>
-					<IconButton
-						style={{ color: "#424242" }}
-						onClick={this.handleAudio}
-					>
-						{this.state.audio === true ? <MicIcon /> : <MicOffIcon />}
-					</IconButton>
-				</div>
+							<div>
+								<IconButton
+									style={{ color: "#424242" }}
+									onClick={this.handleVideo}
+								>
+									{this.state.video === true ? (
+										<VideocamIcon />
+									) : (
+										<VideocamOffIcon />
+									)}
+								</IconButton>
+								<IconButton
+									style={{ color: "#424242" }}
+									onClick={this.handleAudio}
+								>
+									{this.state.audio === true ? <MicIcon /> : <MicOffIcon />}
+								</IconButton>
+							</div>
             </div>
 
             <div
@@ -531,7 +598,7 @@ class Video extends Component {
                   width: "60%",
                   height: "30%",
                 }}
-              ></video>
+              />
             </div>
           </div>
         ) : (
@@ -555,50 +622,50 @@ class Video extends Component {
                 )}
               </IconButton>
 
-              <IconButton
-                style={{ color: "#f44336" }}
-                onClick={() => {
-                  if (window.confirm("Do you want to end this call?"))
-                    this.handleEndCall();
-                }}
-              >
-                <CallEndIcon />
-              </IconButton>
+							<IconButton
+								style={{ color: "#f44336" }}
+								onClick={() => {
+									if (window.confirm("Do you want to end this call?"))
+										this.handleEndCall();
+								}}
+							>
+								<CallEndIcon />
+							</IconButton>
 
-              <IconButton
-                style={{ color: "#424242" }}
-                onClick={this.handleAudio}
-              >
-                {this.state.audio === true ? <MicIcon /> : <MicOffIcon />}
-              </IconButton>
+							<IconButton
+								style={{ color: "#424242" }}
+								onClick={this.handleAudio}
+							>
+								{this.state.audio === true ? <MicIcon /> : <MicOffIcon />}
+							</IconButton>
 
-              {this.state.screenAvailable === true ? (
-                <IconButton
-                  style={{ color: "#424242" }}
-                  onClick={this.handleScreen}
-                >
-                  {this.state.screen === true ? (
-                    <ScreenShareIcon />
-                  ) : (
-                    <StopScreenShareIcon />
-                  )}
-                </IconButton>
-              ) : null}
+							{this.state.screenAvailable === true ? (
+								<IconButton
+									style={{ color: "#424242" }}
+									onClick={this.handleScreen}
+								>
+									{this.state.screen === true ? (
+										<ScreenShareIcon />
+									) : (
+										<StopScreenShareIcon />
+									)}
+								</IconButton>
+							) : null}
 
-              <Badge
-                badgeContent={this.state.newmessages}
-                max={999}
-                color="secondary"
-                onClick={this.openChat}
-              >
-                <IconButton
-                  style={{ color: "#424242" }}
-                  onClick={this.openChat}
-                >
-                  <ChatIcon />
-                </IconButton>
-              </Badge>
-            </div>
+							<Badge
+								badgeContent={this.state.newmessages}
+								max={999}
+								color="secondary"
+								onClick={this.openChat}
+							>
+								<IconButton
+									style={{ color: "#424242" }}
+									onClick={this.openChat}
+								>
+									<ChatIcon />
+								</IconButton>
+							</Badge>
+						</div>
 
             <Modal
               show={this.state.showModal}
@@ -612,20 +679,20 @@ class Video extends Component {
                 <Modal.Body>
                   {this.state.messages.length > 0 ? (
                     this.state.messages.map((item, index) => (
-					<div
-						className="message"
-						id={this.state.username === item.sender ? "you" : "other"}
-					>
-						<div>
-							<div className="message-content">
-								<p>{item.data}</p>
-							</div>
-							<div className="message-meta">
-								<p id="time">{item.time}</p>
-								<p id="author">{item.sender}</p>
-							</div>
-						</div>
-					</div>
+									<div
+										className="message"
+										id={this.state.username === item.sender ? "you" : "other"}
+									>
+										<div>
+											<div className="message-content">
+												<p>{item.data}</p>
+											</div>
+											<div className="message-meta">
+												<p id="time">{item.time}</p>
+												<p id="author">{item.sender}</p>
+											</div>
+										</div>
+									</div>
                     ))
                   ) : (
                     <p>No message yet</p>
@@ -652,13 +719,13 @@ class Video extends Component {
 
             <div className="container">
               <div className="share">
-                <Input value={window.location.href} disable="true"></Input>
+                <Input value={window.location.href} disable="true"/>
                 <Button
                   style={{
                     backgroundColor: "#3f51b5",
                     color: "whitesmoke",
                     marginLeft: "20px",
-					marginRight: "20px",
+										marginRight: "20px",
                     width: "120px",
                     fontSize: "10px",
                   }}
@@ -667,12 +734,12 @@ class Video extends Component {
                   Copy invite link
                 </Button>
                   <FacebookShareButton
-				  	  url="https://sme-video-meeting.herokuapp.com/"
+				  	 					url="https://sme-video-meeting.herokuapp.com/"
                       quote={"Join meeting: " + window.location.href + "\nLink: " }
                     >
                       <FacebookIcon size={32} round={true} style={{margin:"3px"}} />
                   </FacebookShareButton>
-            
+
                   <TelegramShareButton
                       url="https://sme-video-meeting.herokuapp.com/"
                       title={"Join meeting: " + window.location.href + "\nLink: " }
@@ -706,8 +773,13 @@ class Video extends Component {
                     width: "100%",
                     height: "100%",
                   }}
-                ></video>
+                />
               </Row>
+
+							<div id="subtitle-container" className="subtitles-menu text-pattern" hidden={this.state.transcript==null} style={{ "height": height, "width": width, "marginLeft":margin, "marginRight": margin }} ref={this.subtitleRef}>
+								{this.state.transcript}
+							</div>
+
             </div>
           </div>
         )}

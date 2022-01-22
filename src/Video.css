@@ -28,7 +28,7 @@ body {
     justify-content: center;
     text-align: center;
     padding-top: 20px;
-    
+
 }
 
 .div-send-msg {
@@ -43,7 +43,7 @@ body {
     position: fixed; 
     bottom: 0px;
     width: 100%;
-    height: auto;
+    height: 50px;
 }
 .message-container {
     overflow-x: hidden;
@@ -111,4 +111,30 @@ body {
 .message .message-meta {
     display: flex;
     font-size: 12px;
+}
+
+
+.subtitles-menu {
+    position:absolute;
+    bottom:15%;
+    background: #000000;
+    color: black;
+    text-align: justify;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.text-pattern{
+    font-family: sans-serif;
+    font-weight: bold;
+    font-size: 30px;
+    color: white;
+    line-height: 1;
+    -webkit-text-stroke: .03em black;
+    text-shadow: .05em .05em 0 rgba(0,0,0,1);
+    margin: 0;
+    padding: 0;
+    flex-grow: 1;
 }
