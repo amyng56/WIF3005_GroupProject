@@ -35,7 +35,7 @@ body {
     position: fixed; 
     bottom: 0px;
     width: 100%;
-    height: auto;
+    height: 50px;
 }
 .message-container {
     overflow-x: hidden;
@@ -45,31 +45,26 @@ body {
   }
 
 .subtitles-menu {
-    left: 25%;
-    width: 50%;
-    height: 75px;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    overflow-y: hidden;
-    /*position: absolute;*/
-    /*top: 50%;*/
-    /*float-displace: auto;*/
+    position:absolute;
+    bottom:15%;
+    background: #000000;
+    color: black;
+    text-align: justify;
+    padding: 10px;
     display: flex;
-}
-
-.display::-webkit-scrollbar {
-    display: none;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .text-pattern{
     font-family: sans-serif;
     font-weight: bold;
-    font-size: 3vmin;
+    font-size: 30px;
     color: white;
     line-height: 1;
     -webkit-text-stroke: .03em black;
     text-shadow: .05em .05em 0 rgba(0,0,0,1);
     margin: 0;
     padding: 0;
+    flex-grow: 1;
 }
