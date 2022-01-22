@@ -45,10 +45,31 @@ body {
   }
 
 .subtitles-menu {
-    position:absolute;
-    bottom:20%;
-    background:#fff;
-    color: black;
-    width:1000px;
-    height: 100px;
+    left: 25%;
+    width: 50%;
+    height: 75px;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow-y: hidden;
+    /*position: absolute;*/
+    /*top: 50%;*/
+    /*float-displace: auto;*/
+    display: flex;
+}
+
+.display::-webkit-scrollbar {
+    display: none;
+}
+
+.text-pattern{
+    font-family: sans-serif;
+    font-weight: bold;
+    font-size: 3vmin;
+    color: white;
+    line-height: 1;
+    -webkit-text-stroke: .03em black;
+    text-shadow: .05em .05em 0 rgba(0,0,0,1);
+    margin: 0;
+    padding: 0;
 }
