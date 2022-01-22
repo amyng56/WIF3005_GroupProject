@@ -559,24 +559,24 @@ class Video extends Component {
               >
                 Connect
               </Button>
-				<div>
-					<IconButton
-						style={{ color: "#424242" }}
-						onClick={this.handleVideo}
-					>
-						{this.state.video === true ? (
-							<VideocamIcon />
-						) : (
-							<VideocamOffIcon />
-						)}
-					</IconButton>
-					<IconButton
-						style={{ color: "#424242" }}
-						onClick={this.handleAudio}
-					>
-						{this.state.audio === true ? <MicIcon /> : <MicOffIcon />}
-					</IconButton>
-				</div>
+							<div>
+								<IconButton
+									style={{ color: "#424242" }}
+									onClick={this.handleVideo}
+								>
+									{this.state.video === true ? (
+										<VideocamIcon />
+									) : (
+										<VideocamOffIcon />
+									)}
+								</IconButton>
+								<IconButton
+									style={{ color: "#424242" }}
+									onClick={this.handleAudio}
+								>
+									{this.state.audio === true ? <MicIcon /> : <MicOffIcon />}
+								</IconButton>
+							</div>
             </div>
 
             <div
@@ -598,7 +598,7 @@ class Video extends Component {
                   width: "60%",
                   height: "30%",
                 }}
-              ></video>
+              />
             </div>
           </div>
         ) : (
@@ -621,72 +621,51 @@ class Video extends Component {
                   <VideocamOffIcon />
                 )}
               </IconButton>
-			<div>
-				{this.state.askForUsername === true ?
-					<div>
-						<div style={{background: "white", width: "30%", height: "auto", padding: "20px", minWidth: "400px",
-								textAlign: "center", margin: "auto", marginTop: "50px", justifyContent: "center"}}>
-							<p style={{ margin: 0, fontWeight: "bold", paddingRight: "50px" }}>Set your username</p>
-							<Input placeholder="Username" value={this.state.username} onChange={e => this.handleUsername(e)} />
-							<Button variant="contained" color="primary" onClick={this.connect} style={{ margin: "20px" }}>Connect</Button>
-						</div>
 
-						<div style={{ justifyContent: "center", textAlign: "center", paddingTop: "40px" }}>
-							<video id="my-video" ref={this.localVideoref} autoPlay muted style={{
-								borderStyle: "solid",borderColor: "#bdbdbd",objectFit: "fill",width: "60%",height: "30%"}}/>
-						</div>
-					</div>
-					:
-					<div>
-						<div className="btn-down" style={{ backgroundColor: "whitesmoke", color: "whitesmoke", textAlign: "center" }}>
-							<IconButton style={{ color: "#424242" }} onClick={this.handleVideo}>
-								{(this.state.video === true) ? <VideocamIcon /> : <VideocamOffIcon />}
+							<IconButton
+								style={{ color: "#f44336" }}
+								onClick={() => {
+									if (window.confirm("Do you want to end this call?"))
+										this.handleEndCall();
+								}}
+							>
+								<CallEndIcon />
 							</IconButton>
 
-              <IconButton
-                style={{ color: "#f44336" }}
-                onClick={() => {
-                  if (window.confirm("Do you want to end this call?"))
-                    this.handleEndCall();
-                }}
-              >
-                <CallEndIcon />
-              </IconButton>
+							<IconButton
+								style={{ color: "#424242" }}
+								onClick={this.handleAudio}
+							>
+								{this.state.audio === true ? <MicIcon /> : <MicOffIcon />}
+							</IconButton>
 
-              <IconButton
-                style={{ color: "#424242" }}
-                onClick={this.handleAudio}
-              >
-                {this.state.audio === true ? <MicIcon /> : <MicOffIcon />}
-              </IconButton>
+							{this.state.screenAvailable === true ? (
+								<IconButton
+									style={{ color: "#424242" }}
+									onClick={this.handleScreen}
+								>
+									{this.state.screen === true ? (
+										<ScreenShareIcon />
+									) : (
+										<StopScreenShareIcon />
+									)}
+								</IconButton>
+							) : null}
 
-              {this.state.screenAvailable === true ? (
-                <IconButton
-                  style={{ color: "#424242" }}
-                  onClick={this.handleScreen}
-                >
-                  {this.state.screen === true ? (
-                    <ScreenShareIcon />
-                  ) : (
-                    <StopScreenShareIcon />
-                  )}
-                </IconButton>
-              ) : null}
-
-              <Badge
-                badgeContent={this.state.newmessages}
-                max={999}
-                color="secondary"
-                onClick={this.openChat}
-              >
-                <IconButton
-                  style={{ color: "#424242" }}
-                  onClick={this.openChat}
-                >
-                  <ChatIcon />
-                </IconButton>
-              </Badge>
-            </div>
+							<Badge
+								badgeContent={this.state.newmessages}
+								max={999}
+								color="secondary"
+								onClick={this.openChat}
+							>
+								<IconButton
+									style={{ color: "#424242" }}
+									onClick={this.openChat}
+								>
+									<ChatIcon />
+								</IconButton>
+							</Badge>
+						</div>
 
             <Modal
               show={this.state.showModal}
@@ -700,20 +679,20 @@ class Video extends Component {
                 <Modal.Body>
                   {this.state.messages.length > 0 ? (
                     this.state.messages.map((item, index) => (
-					<div
-						className="message"
-						id={this.state.username === item.sender ? "you" : "other"}
-					>
-						<div>
-							<div className="message-content">
-								<p>{item.data}</p>
-							</div>
-							<div className="message-meta">
-								<p id="time">{item.time}</p>
-								<p id="author">{item.sender}</p>
-							</div>
-						</div>
-					</div>
+									<div
+										className="message"
+										id={this.state.username === item.sender ? "you" : "other"}
+									>
+										<div>
+											<div className="message-content">
+												<p>{item.data}</p>
+											</div>
+											<div className="message-meta">
+												<p id="time">{item.time}</p>
+												<p id="author">{item.sender}</p>
+											</div>
+										</div>
+									</div>
                     ))
                   ) : (
                     <p>No message yet</p>
@@ -738,22 +717,15 @@ class Video extends Component {
               </Modal.Footer>
             </Modal>
 
-						<div className="container">
-							<div style={{ paddingTop: "20px" }}>
-								<Input value={window.location.href} disable="true"/>
-								<Button style={{backgroundColor: "#3f51b5",color: "whitesmoke",marginLeft: "20px",
-									marginTop: "10px",width: "120px",fontSize: "10px"
-								}} onClick={this.copyUrl}>Copy invite link</Button>
-							</div>
             <div className="container">
               <div className="share">
-                <Input value={window.location.href} disable="true"></Input>
+                <Input value={window.location.href} disable="true"/>
                 <Button
                   style={{
                     backgroundColor: "#3f51b5",
                     color: "whitesmoke",
                     marginLeft: "20px",
-					marginRight: "20px",
+										marginRight: "20px",
                     width: "120px",
                     fontSize: "10px",
                   }}
@@ -762,7 +734,7 @@ class Video extends Component {
                   Copy invite link
                 </Button>
                   <FacebookShareButton
-				  	  url="https://sme-video-meeting.herokuapp.com/"
+				  	 					url="https://sme-video-meeting.herokuapp.com/"
                       quote={"Join meeting: " + window.location.href + "\nLink: " }
                     >
                       <FacebookIcon size={32} round={true} style={{margin:"3px"}} />
@@ -783,19 +755,6 @@ class Video extends Component {
                   </WhatsappShareButton>
               </div>
 
-							<Row id="main" className="flex-container" style={{ margin: 0, padding: 0 }}>
-								<video id="my-video" ref={this.localVideoref} autoPlay muted style={{
-									borderStyle: "solid",borderColor: "#bdbdbd",margin: "10px",objectFit: "fill",
-									width: "100%",height: "100%"}}/>
-							</Row>
-						</div>
-					</div>
-				}
-				<div id="subtitle-container" className="subtitles-menu text-pattern" hidden={this.state.transcript==null} style={{ "height": height, "width": width, "marginLeft":margin, "marginRight": margin }} ref={this.subtitleRef}>
-					{this.state.transcript}
-				</div>
-			</div>
-		)
               <Row
                 id="main"
                 className="flex-container"
@@ -814,8 +773,13 @@ class Video extends Component {
                     width: "100%",
                     height: "100%",
                   }}
-                ></video>
+                />
               </Row>
+
+							<div id="subtitle-container" className="subtitles-menu text-pattern" hidden={this.state.transcript==null} style={{ "height": height, "width": width, "marginLeft":margin, "marginRight": margin }} ref={this.subtitleRef}>
+								{this.state.transcript}
+							</div>
+
             </div>
           </div>
         )}
