@@ -327,14 +327,14 @@ class Video extends Component {
 		let height = String(100 / elms) + "%"
 		let width = ""
 		if(elms === 0 || elms === 1) {
-			width = "70%"
-			height = "auto"
+			width = "100%"
+			height = "100%"
 		} else if (elms === 2) {
 			width = "45%"
-			height = "auto"
+			height = "100%"
 		} else if (elms === 3 || elms === 4) {
 			width = "35%"
-			height = "auto"
+			height = "50%"
 		} else {
 			width = String(100 / elms) + "%"
 		}
@@ -596,7 +596,7 @@ class Video extends Component {
                   borderColor: "#bdbdbd",
                   objectFit: "fill",
                   width: "60%",
-                  aspectRatio: "4/3",
+                  height: "30%",
                 }}
               />
             </div>
@@ -770,8 +770,8 @@ class Video extends Component {
                     borderColor: "#bdbdbd",
                     margin: "10px",
                     objectFit: "fill",
-                    width: "60%",
-                    aspectRatio: "4/3",
+                    width: "100%",
+                    height: "100%",
                   }}
                 />
               </Row>
