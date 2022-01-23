@@ -32,7 +32,7 @@ import {
 import {MdSubtitlesOff, MdSubtitles} from 'react-icons/md';
 
 
-const server_url = process.env.NODE_ENV === 'production' ? 'https://video.sebastienbiollo.com' : "http://localhost:4001"
+const server_url = process.env.NODE_ENV === 'production' ? 'https://sme-video-meeting.herokuapp.com' : "http://localhost:4001"
 
 var connections = {}
 const peerConnectionConfig = {
@@ -129,7 +129,7 @@ class Video extends Component {
 				.map(result => result.transcript)
 				.join('')
 			this.setState({transcript: transcript})
-			this.sendTranscript(transcript)
+			this.sendTranscript()
 			mic.onerror = event => {
 				console.log(event.error)
 			}
@@ -524,10 +524,10 @@ class Video extends Component {
 		}
 	}
 
-	sendTranscript = transcript => {
+	sendTranscript = () => {
 		console.log(this.state.transcript)
-		if (transcript !== "") {
-			socket.emit('speech-to-text', transcript, this.state.username)
+		if (tthis.state.transcript !== "") {
+			socket.emit('speech-to-text', this.state.transcript, this.state.username)
 			this.setState({ transcript: "", sender: this.state.username }, this.scrollToBottom)
 		}
 	}
