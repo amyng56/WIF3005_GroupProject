@@ -26,6 +26,7 @@ sanitizeString = (str) => {
 
 connections = {}
 messages = {}
+transcript = {}
 timeOnline = {}
 
 io.on('connection', (socket) => {
@@ -46,6 +47,13 @@ io.on('connection', (socket) => {
 			for(let a = 0; a < messages[path].length; ++a){
 				io.to(socket.id).emit("chat-message", messages[path][a]['data'], 
 					messages[path][a]['sender'], messages[path][a]['socket-id-sender'])
+			}
+		}
+
+		if(transcript[path] !== undefined){
+			for(let a = 0; a < transcript[path].length; ++a){
+				io.to(socket.id).emit("transcript", transcript[path][a]['data'],
+					transcript[path][a]['sender'], transcript[path][a]['socket-id-sender'])
 			}
 		}
 
@@ -80,6 +88,34 @@ io.on('connection', (socket) => {
 
 			for(let a = 0; a < connections[key].length; ++a){
 				io.to(connections[key][a]).emit("chat-message", data, sender, socket.id)
+			}
+		}
+	})
+
+	socket.on('transcript', (data, sender) => {
+		data = sanitizeString(data)
+		sender = sanitizeString(sender)
+
+		var key
+		var ok = false
+		for (const [k, v] of Object.entries(connections)) {
+			for(let a = 0; a < v.length; ++a){
+				if(v[a] === socket.id){
+					key = k
+					ok = true
+				}
+			}
+		}
+
+		if(ok === true){
+			if(transcript[key] === undefined){
+				transcript[key] = []
+			}
+			transcript[key].push({"sender": sender, "data": data, "socket-id-sender": socket.id})
+			console.log("message", key, ":", sender, data)
+
+			for(let a = 0; a < connections[key].length; ++a){
+				io.to(connections[key][a]).emit("transcript", data, sender, socket.id)
 			}
 		}
 	})

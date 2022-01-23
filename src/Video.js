@@ -29,6 +29,8 @@ import {
 	TelegramIcon,
 	WhatsappIcon,
   } from "react-share";
+import {MdSubtitlesOff, MdSubtitles} from 'react-icons/md';
+
 
 const server_url = process.env.NODE_ENV === 'production' ? 'https://video.sebastienbiollo.com' : "http://localhost:4001"
 
@@ -76,7 +78,10 @@ class Video extends Component {
 			newmessages: 0,
 			askForUsername: true,
 			username: faker.internet.userName(),
-			transcript: null,
+			transcripts: [],
+			transcript: "",
+			newTranscript: 0,
+			captionsShown: false
 		}
 		connections = {}
 
@@ -123,8 +128,8 @@ class Video extends Component {
 				.map(result => result[0])
 				.map(result => result.transcript)
 				.join('')
-			console.log(transcript)
-			this.setState({transcript: transcript}, this.scrollToBottom(transcript))
+			this.setState({transcript: transcript})
+			this.sendTranscript()
 			mic.onerror = event => {
 				console.log(event.error)
 			}
@@ -243,7 +248,7 @@ class Video extends Component {
 			if (navigator.mediaDevices.getDisplayMedia) {
 				navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
 					.then(this.getDislayMediaSuccess)
-					.then((stream) => {})
+					.then((stream) => { })
 					.catch((e) => console.log(e))
 			}
 		} else {
@@ -361,6 +366,8 @@ class Video extends Component {
 
 			socket.on('chat-message', this.addMessage)
 
+			socket.on('transcript', this.displayTranscript)
+
 			socket.on('user-left', (id) => {
 				let video = document.querySelector(`[data-socket="${id}"]`)
 				if (video !== null) {
@@ -457,6 +464,7 @@ class Video extends Component {
 	}
 
 	handleVideo = () => this.setState({ video: !this.state.video }, () => this.getUserMedia())
+	handleCaption = () => this.setState({ captionsShown: !this.state.captionsShown })
 	handleAudio = () => this.setState({ audio: !this.state.audio }, () => this.getUserMedia())
 	handleScreen = () => this.setState({ screen: !this.state.screen }, () => this.getDislayMedia())
 
@@ -488,12 +496,35 @@ class Video extends Component {
 		}
 	}
 
+	displayTranscript = (data, sender, socketIdSender) => {
+		this.setState(prevState => ({
+			transcripts: [...prevState.transcripts, {
+				"sender": sender,
+				"data": data,
+				"time":
+					new Date(Date.now()).getHours() +
+					":" +
+					new Date(Date.now()).getMinutes(),
+			}],
+		}))
+		if (socketIdSender !== socketId) {
+			this.setState({ newTranscript: this.state.newTranscript + 1 })
+		}
+	}
+
 	handleUsername = (e) => this.setState({ username: e.target.value })
 
 	sendMessage = () => {
 		if (this.state.message !== "") {
 		socket.emit('chat-message', this.state.message, this.state.username)
 		this.setState({ message: "", sender: this.state.username })
+		}
+	}
+
+	sendTranscript = () => {
+		if (this.state.transcript !== "") {
+			socket.emit('transcript', this.state.transcript, this.state.username)
+			this.setState({ transcript: "", sender: this.state.username }, this.scrollToBottom)
 		}
 	}
 
@@ -665,6 +696,17 @@ class Video extends Component {
 									<ChatIcon />
 								</IconButton>
 							</Badge>
+
+							<IconButton
+								style={{ color: "#424242" }}
+								onClick={this.handleCaption}
+							>
+								{this.state.captionsShown === true ? (
+									<MdSubtitles />
+								) : (
+									<MdSubtitlesOff />
+								)}
+							</IconButton>
 						</div>
 
             <Modal
@@ -776,9 +818,17 @@ class Video extends Component {
                 />
               </Row>
 
-							<div id="subtitle-container" className="subtitles-menu text-pattern" hidden={this.state.transcript==null} style={{ "height": height, "width": width, "marginLeft":margin, "marginRight": margin }} ref={this.subtitleRef}>
-								{this.state.transcript}
+							<div id="subtitle-container" ref={this.subtitleRef} hidden={!this.state.captionsShown}>
+								{this.state.transcripts.length > 0 ? (
+									<span  className="subtitles-menu text-pattern"  style={{ "height": height, "width": width, "marginLeft":margin, "marginRight": margin }}>
+										{this.state.transcripts[this.state.transcripts.length-1].sender} : {this.state.transcripts[this.state.transcripts.length-1].data}
+									</span>
+								) : (
+									<span></span>
+								)}
 							</div>
+
+
 
             </div>
           </div>
