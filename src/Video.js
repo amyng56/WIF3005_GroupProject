@@ -510,6 +510,7 @@ class Video extends Component {
 		if (socketIdSender !== socketId) {
 			this.setState({ newTranscript: this.state.newTranscript + 1 })
 		}
+		console.log("Received: " + data)
 	}
 
 	handleUsername = (e) => this.setState({ username: e.target.value })
@@ -820,7 +821,7 @@ class Video extends Component {
                 />
               </Row>
 
-							<div id="subtitle-container" ref={this.subtitleRef} hidden={!this.state.captionsShown}>
+							<div id="subtitle-container" ref={this.subtitleRef} hidden={this.state.captionsShown===false}>
 								{this.state.transcripts.length > 0 ? (
 									<span  className="subtitles-menu text-pattern"  style={{ "height": height, "width": width, "marginLeft":margin, "marginRight": margin }}>
 										{this.state.transcripts[this.state.transcripts.length-1].sender} : {this.state.transcripts[this.state.transcripts.length-1].data}
