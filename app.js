@@ -112,7 +112,7 @@ io.on('connection', (socket) => {
 				transcript[key] = []
 			}
 			transcript[key].push({"sender": sender, "data": data, "socket-id-sender": socket.id})
-			console.log("message", key, ":", sender, data)
+			console.log("transcript", key, ":", sender, data)
 
 			for(let a = 0; a < connections[key].length; ++a){
 				io.to(connections[key][a]).emit("transcript", data, sender, socket.id)
