@@ -508,6 +508,7 @@ class Video extends Component {
 			}],
 		}))
 		if (socketIdSender !== socketId) {
+			console.log("Inside Logic")
 			this.setState({ newTranscript: this.state.newTranscript + 1 })
 		}
 		console.log("Received: " + data)
