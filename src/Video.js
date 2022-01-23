@@ -99,7 +99,7 @@ class Video extends Component {
 
 	componentDidUpdate = (prevProps, prevState, snapshot) => {
 		let isMount = true
-		if (prevState.audio != this.state.audio){
+		if (prevState.audio !== this.state.audio){
 			this.handleListen()
 		}
 	}
@@ -508,7 +508,6 @@ class Video extends Component {
 			}],
 		}))
 		if (socketIdSender !== socketId) {
-			console.log("Inside Logic")
 			this.setState({ newTranscript: this.state.newTranscript + 1 })
 		}
 		console.log("Received: " + data)
@@ -518,15 +517,13 @@ class Video extends Component {
 
 	sendMessage = () => {
 		if (this.state.message !== "") {
-		socket.emit('chat-message', this.state.message, this.state.username)
-		this.setState({ message: "", sender: this.state.username })
+			socket.emit('chat-message', this.state.message, this.state.username)
+			this.setState({ message: "", sender: this.state.username })
 		}
 	}
 
 	sendTranscript = () => {
-		console.log("Send Transcript")
 		if (this.state.transcript !== "") {
-			console.log(this.state.transcript)
 			socket.emit('transcript', this.state.transcript, this.state.username)
 			this.setState({ transcript: "", sender: this.state.username }, this.scrollToBottom)
 		}

@@ -26,7 +26,7 @@ sanitizeString = (str) => {
 
 connections = {}
 messages = {}
-transcript = {}
+transcripts = {}
 timeOnline = {}
 
 io.on('connection', (socket) => {
@@ -50,10 +50,10 @@ io.on('connection', (socket) => {
 			}
 		}
 
-		if(transcript[path] !== undefined){
-			for(let a = 0; a < transcript[path].length; ++a){
-				io.to(socket.id).emit("transcript", transcript[path][a]['data'],
-					transcript[path][a]['sender'], transcript[path][a]['socket-id-sender'])
+		if(transcripts[path] !== undefined){
+			for(let a = 0; a < transcripts[path].length; ++a){
+				io.to(socket.id).emit("transcript", transcripts[path][a]['data'],
+					transcripts[path][a]['sender'], transcripts[path][a]['socket-id-sender'])
 			}
 		}
 
@@ -108,10 +108,10 @@ io.on('connection', (socket) => {
 		}
 
 		if(ok === true){
-			if(transcript[key] === undefined){
-				transcript[key] = []
+			if(transcripts[key] === undefined){
+				transcripts[key] = []
 			}
-			transcript[key].push({"sender": sender, "data": data, "socket-id-sender": socket.id})
+			transcripts[key].push({"sender": sender, "data": data, "socket-id-sender": socket.id})
 			console.log("transcript", key, ":", sender, data)
 
 			for(let a = 0; a < connections[key].length; ++a){
