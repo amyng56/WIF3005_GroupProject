@@ -52,7 +52,7 @@ io.on('connection', (socket) => {
 
 		if(transcripts[path] !== undefined){
 			for(let a = 0; a < transcripts[path].length; ++a){
-				io.to(socket.id).emit("transcript", transcripts[path][a]['data'],
+				io.to(socket.id).emit("speech-to-text", transcripts[path][a]['data'],
 					transcripts[path][a]['sender'], transcripts[path][a]['socket-id-sender'])
 			}
 		}
@@ -92,7 +92,7 @@ io.on('connection', (socket) => {
 		}
 	})
 
-	socket.on('transcript', (data, sender) => {
+	socket.on('speech-to-text', (data, sender) => {
 		data = sanitizeString(data)
 		sender = sanitizeString(sender)
 
@@ -112,10 +112,10 @@ io.on('connection', (socket) => {
 				transcripts[key] = []
 			}
 			transcripts[key].push({"sender": sender, "data": data, "socket-id-sender": socket.id})
-			console.log("transcript", key, ":", sender, data)
+			console.log("speech-to-text", key, ":", sender, data)
 
 			for(let a = 0; a < connections[key].length; ++a){
-				io.to(connections[key][a]).emit("transcript", data, sender, socket.id)
+				io.to(connections[key][a]).emit("speech-to-text", data, sender, socket.id)
 			}
 		}
 	})

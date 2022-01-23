@@ -129,7 +129,7 @@ class Video extends Component {
 				.map(result => result.transcript)
 				.join('')
 			this.setState({transcript: transcript})
-			this.sendTranscript()
+			this.sendTranscript(transcript)
 			mic.onerror = event => {
 				console.log(event.error)
 			}
@@ -360,13 +360,15 @@ class Video extends Component {
 
 		socket.on('signal', this.gotMessageFromServer)
 
+		// socket.on('speech-to-text', this.displayTranscript)
+
 		socket.on('connect', () => {
 			socket.emit('join-call', window.location.href)
 			socketId = socket.id
 
 			socket.on('chat-message', this.addMessage)
 
-			socket.on('transcript', this.displayTranscript)
+			socket.on('speech-to-text', this.displayTranscript)
 
 			socket.on('user-left', (id) => {
 				let video = document.querySelector(`[data-socket="${id}"]`)
@@ -522,9 +524,10 @@ class Video extends Component {
 		}
 	}
 
-	sendTranscript = () => {
-		if (this.state.transcript !== "") {
-			socket.emit('transcript', this.state.transcript, this.state.username)
+	sendTranscript = transcript => {
+		console.log(this.state.transcript)
+		if (transcript !== "") {
+			socket.emit('speech-to-text', transcript, this.state.username)
 			this.setState({ transcript: "", sender: this.state.username }, this.scrollToBottom)
 		}
 	}
@@ -553,7 +556,10 @@ class Video extends Component {
 		})
 	}
 
-	connect = () => this.setState({ askForUsername: false }, () => this.getMedia())
+	connect = () => this.setState({ askForUsername: false, transcript: ""}, () => {
+		this.getMedia()
+		this.handleListen()
+	})
 
 	render() {
 		return (
@@ -829,7 +835,15 @@ class Video extends Component {
 								)}
 							</div>
 
-
+							{/*<div id="subtitle-container" ref={this.subtitleRef} hidden={this.state.captionsShown===false}>*/}
+							{/*	{this.state.transcript ? (*/}
+							{/*		<span  className="subtitles-menu text-pattern"  style={{ "height": height, "width": width, "marginLeft":margin, "marginRight": margin }}>*/}
+							{/*			{this.state.transcript}*/}
+							{/*		</span>*/}
+							{/*	) : (*/}
+							{/*		<span></span>*/}
+							{/*	)}*/}
+							{/*</div>*/}
 
             </div>
           </div>
