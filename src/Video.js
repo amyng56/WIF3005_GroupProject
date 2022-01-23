@@ -526,7 +526,7 @@ class Video extends Component {
 
 	sendTranscript = () => {
 		console.log(this.state.transcript)
-		if (tthis.state.transcript !== "") {
+		if (this.state.transcript !== "") {
 			socket.emit('speech-to-text', this.state.transcript, this.state.username)
 			this.setState({ transcript: "", sender: this.state.username }, this.scrollToBottom)
 		}
