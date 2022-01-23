@@ -124,12 +124,24 @@ class Video extends Component {
 		}
 
 		mic.onresult = event => {
-			const transcript = Array.from(event.results)
-				.map(result => result[0])
-				.map(result => result.transcript)
-				.join('')
-			this.setState({transcript: transcript})
-			this.sendTranscript()
+			console.log(event.results)
+			// const transcript = Array.from(event.results)
+			// 	.map(result => result[0])
+			// 	.map(result => result.transcript)
+			// 	.join('')
+			var final = "";
+			var interim = "";
+			for (var i = event.resultIndex; i < event.results.length; ++i) {
+				if (event.results[i].final) {
+					final += event.results[i][0].transcript;
+					this.setState({transcript: final})
+				} else {
+					interim += event.results[i][0].transcript;
+					this.setState({transcript: interim})
+				}
+				this.sendTranscript()
+			}
+
 			mic.onerror = event => {
 				console.log(event.error)
 			}
