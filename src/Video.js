@@ -29,8 +29,10 @@ import {
 	TelegramIcon,
 	WhatsappIcon,
   } from "react-share";
+import {MdSubtitlesOff, MdSubtitles} from 'react-icons/md';
 
-const server_url = process.env.NODE_ENV === 'production' ? 'https://video.sebastienbiollo.com' : "http://localhost:4001"
+
+const server_url = process.env.NODE_ENV === 'production' ? 'https://sme-video-meeting.herokuapp.com' : "http://localhost:4001"
 
 var connections = {}
 const peerConnectionConfig = {
@@ -76,7 +78,10 @@ class Video extends Component {
 			newmessages: 0,
 			askForUsername: true,
 			username: faker.internet.userName(),
-			transcript: null,
+			transcripts: [],
+			transcript: "",
+			newTranscript: 0,
+			captionsShown: false
 		}
 		connections = {}
 
@@ -94,7 +99,7 @@ class Video extends Component {
 
 	componentDidUpdate = (prevProps, prevState, snapshot) => {
 		let isMount = true
-		if (prevState.audio != this.state.audio){
+		if (prevState.audio !== this.state.audio){
 			this.handleListen()
 		}
 	}
@@ -119,12 +124,24 @@ class Video extends Component {
 		}
 
 		mic.onresult = event => {
-			const transcript = Array.from(event.results)
-				.map(result => result[0])
-				.map(result => result.transcript)
-				.join('')
-			console.log(transcript)
-			this.setState({transcript: transcript}, this.scrollToBottom(transcript))
+			console.log(event.results)
+			// const transcript = Array.from(event.results)
+			// 	.map(result => result[0])
+			// 	.map(result => result.transcript)
+			// 	.join('')
+			var final = "";
+			var interim = "";
+			for (var i = event.resultIndex; i < event.results.length; ++i) {
+				if (event.results[i].final) {
+					final += event.results[i][0].transcript;
+					this.setState({transcript: final})
+				} else {
+					interim += event.results[i][0].transcript;
+					this.setState({transcript: interim})
+				}
+				this.sendTranscript()
+			}
+
 			mic.onerror = event => {
 				console.log(event.error)
 			}
@@ -243,7 +260,7 @@ class Video extends Component {
 			if (navigator.mediaDevices.getDisplayMedia) {
 				navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
 					.then(this.getDislayMediaSuccess)
-					.then((stream) => {})
+					.then((stream) => { })
 					.catch((e) => console.log(e))
 			}
 		} else {
@@ -355,11 +372,15 @@ class Video extends Component {
 
 		socket.on('signal', this.gotMessageFromServer)
 
+		// socket.on('speech-to-text', this.displayTranscript)
+
 		socket.on('connect', () => {
 			socket.emit('join-call', window.location.href)
 			socketId = socket.id
 
 			socket.on('chat-message', this.addMessage)
+
+			socket.on('speech-to-text', this.displayTranscript)
 
 			socket.on('user-left', (id) => {
 				let video = document.querySelector(`[data-socket="${id}"]`)
@@ -457,6 +478,7 @@ class Video extends Component {
 	}
 
 	handleVideo = () => this.setState({ video: !this.state.video }, () => this.getUserMedia())
+	handleCaption = () => this.setState({ captionsShown: !this.state.captionsShown })
 	handleAudio = () => this.setState({ audio: !this.state.audio }, () => this.getUserMedia())
 	handleScreen = () => this.setState({ screen: !this.state.screen }, () => this.getDislayMedia())
 
@@ -488,12 +510,37 @@ class Video extends Component {
 		}
 	}
 
+	displayTranscript = (data, sender, socketIdSender) => {
+		this.setState(prevState => ({
+			transcripts: [...prevState.transcripts, {
+				"sender": sender,
+				"data": data,
+				"time":
+					new Date(Date.now()).getHours() +
+					":" +
+					new Date(Date.now()).getMinutes(),
+			}],
+		}))
+		if (socketIdSender !== socketId) {
+			this.setState({ newTranscript: this.state.newTranscript + 1 })
+		}
+		console.log("Received: " + data)
+	}
+
 	handleUsername = (e) => this.setState({ username: e.target.value })
 
 	sendMessage = () => {
 		if (this.state.message !== "") {
-		socket.emit('chat-message', this.state.message, this.state.username)
-		this.setState({ message: "", sender: this.state.username })
+			socket.emit('chat-message', this.state.message, this.state.username)
+			this.setState({ message: "", sender: this.state.username })
+		}
+	}
+
+	sendTranscript = () => {
+		console.log(this.state.transcript)
+		if (this.state.transcript !== "") {
+			socket.emit('speech-to-text', this.state.transcript, this.state.username)
+			this.setState({ transcript: "", sender: this.state.username }, this.scrollToBottom)
 		}
 	}
 
@@ -521,7 +568,10 @@ class Video extends Component {
 		})
 	}
 
-	connect = () => this.setState({ askForUsername: false }, () => this.getMedia())
+	connect = () => this.setState({ askForUsername: false, transcript: ""}, () => {
+		this.getMedia()
+		this.handleListen()
+	})
 
 	render() {
 		return (
@@ -665,6 +715,17 @@ class Video extends Component {
 									<ChatIcon />
 								</IconButton>
 							</Badge>
+
+							<IconButton
+								style={{ color: "#424242" }}
+								onClick={this.handleCaption}
+							>
+								{this.state.captionsShown === true ? (
+									<MdSubtitles />
+								) : (
+									<MdSubtitlesOff />
+								)}
+							</IconButton>
 						</div>
 
             <Modal
@@ -776,9 +837,25 @@ class Video extends Component {
                 />
               </Row>
 
-							<div id="subtitle-container" className="subtitles-menu text-pattern" hidden={this.state.transcript==null} style={{ "height": height, "width": width, "marginLeft":margin, "marginRight": margin }} ref={this.subtitleRef}>
-								{this.state.transcript}
+							<div id="subtitle-container" ref={this.subtitleRef} hidden={this.state.captionsShown===false}>
+								{this.state.transcripts.length > 0 ? (
+									<span  className="subtitles-menu text-pattern"  style={{ "height": height, "width": width, "marginLeft":margin, "marginRight": margin }}>
+										{this.state.transcripts[this.state.transcripts.length-1].sender} : {this.state.transcripts[this.state.transcripts.length-1].data}
+									</span>
+								) : (
+									<span></span>
+								)}
 							</div>
+
+							{/*<div id="subtitle-container" ref={this.subtitleRef} hidden={this.state.captionsShown===false}>*/}
+							{/*	{this.state.transcript ? (*/}
+							{/*		<span  className="subtitles-menu text-pattern"  style={{ "height": height, "width": width, "marginLeft":margin, "marginRight": margin }}>*/}
+							{/*			{this.state.transcript}*/}
+							{/*		</span>*/}
+							{/*	) : (*/}
+							{/*		<span></span>*/}
+							{/*	)}*/}
+							{/*</div>*/}
 
             </div>
           </div>

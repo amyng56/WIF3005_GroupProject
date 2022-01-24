@@ -7,7 +7,7 @@ const path = require("path")
 var xss = require("xss")
 
 var server = http.createServer(app)
-var io = require('socket.io')(server)
+var io = require('socket.io').listen(server)
 
 app.use(cors())
 app.use(bodyParser.json())
@@ -26,6 +26,7 @@ sanitizeString = (str) => {
 
 connections = {}
 messages = {}
+transcripts = {}
 timeOnline = {}
 
 io.on('connection', (socket) => {
@@ -46,6 +47,13 @@ io.on('connection', (socket) => {
 			for(let a = 0; a < messages[path].length; ++a){
 				io.to(socket.id).emit("chat-message", messages[path][a]['data'], 
 					messages[path][a]['sender'], messages[path][a]['socket-id-sender'])
+			}
+		}
+
+		if(transcripts[path] !== undefined){
+			for(let a = 0; a < transcripts[path].length; ++a){
+				io.to(socket.id).emit("speech-to-text", transcripts[path][a]['data'],
+					transcripts[path][a]['sender'], transcripts[path][a]['socket-id-sender'])
 			}
 		}
 
@@ -80,6 +88,34 @@ io.on('connection', (socket) => {
 
 			for(let a = 0; a < connections[key].length; ++a){
 				io.to(connections[key][a]).emit("chat-message", data, sender, socket.id)
+			}
+		}
+	})
+
+	socket.on('speech-to-text', (data, sender) => {
+		data = sanitizeString(data)
+		sender = sanitizeString(sender)
+
+		var key
+		var ok = false
+		for (const [k, v] of Object.entries(connections)) {
+			for(let a = 0; a < v.length; ++a){
+				if(v[a] === socket.id){
+					key = k
+					ok = true
+				}
+			}
+		}
+
+		if(ok === true){
+			if(transcripts[key] === undefined){
+				transcripts[key] = []
+			}
+			transcripts[key].push({"sender": sender, "data": data, "socket-id-sender": socket.id})
+			console.log("speech-to-text", key, ":", sender, data)
+
+			for(let a = 0; a < connections[key].length; ++a){
+				io.to(connections[key][a]).emit("speech-to-text", data, sender, socket.id)
 			}
 		}
 	})
