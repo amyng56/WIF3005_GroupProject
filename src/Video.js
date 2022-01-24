@@ -28,9 +28,9 @@ import {
 	FacebookIcon,
 	TelegramIcon,
 	WhatsappIcon,
-  } from "react-share";
+} from "react-share";
+import { googleTranslate } from "./utils/googleTranslate";
 import {MdSubtitlesOff, MdSubtitles} from 'react-icons/md';
-
 
 const server_url = process.env.NODE_ENV === 'production' ? 'https://sme-video-meeting.herokuapp.com' : "http://localhost:4001"
 
@@ -81,7 +81,10 @@ class Video extends Component {
 			transcripts: [],
 			transcript: "",
 			newTranscript: 0,
-			captionsShown: false
+			captionsShown: false,
+			languageCodes: [{ language: 'en', name: "English" }, {language: 'ms', name: "Malay"}],
+			language: "en",
+			translatedTranscript: null
 		}
 		connections = {}
 
@@ -104,27 +107,39 @@ class Video extends Component {
 		}
 	}
 
+	handleTranslate = (language) => {
+		this.setState({language: language})
+		if (this.state.transcripts.length > 0){
+			const translating = translatedTranscript => {
+				this.setState({ translatedTranscript: translatedTranscript });
+			};
+
+			// translate the question
+			console.log(this.state.transcripts[this.state.transcripts.length-1])
+			googleTranslate.translate(this.state.transcripts[this.state.transcripts.length-1].data, language, function(err, translation) {
+				let translatedTranscript = translation.translatedText;
+				translating(translatedTranscript);
+			});
+		}
+	};
+
 	handleListen = () => {
 		if (this.state.audio) {
 			mic.start()
 			mic.onend = () => {
-				console.log('continue..')
 				mic.start()
 			}
 		} else {
 			mic.stop()
 			mic.onend = () => {
 				this.setState({transcript: null})
-				console.log('Stopped Mic on Click')
 
 			}
 		}
 		mic.onstart = () => {
-			console.log('Mics on')
 		}
 
 		mic.onresult = event => {
-			console.log(event.results)
 			// const transcript = Array.from(event.results)
 			// 	.map(result => result[0])
 			// 	.map(result => result.transcript)
@@ -372,8 +387,6 @@ class Video extends Component {
 
 		socket.on('signal', this.gotMessageFromServer)
 
-		// socket.on('speech-to-text', this.displayTranscript)
-
 		socket.on('connect', () => {
 			socket.emit('join-call', window.location.href)
 			socketId = socket.id
@@ -396,7 +409,7 @@ class Video extends Component {
 			socket.on('user-joined', (id, clients) => {
 				clients.forEach((socketListId) => {
 					connections[socketListId] = new RTCPeerConnection(peerConnectionConfig)
-					// Wait for their ice candidate       
+					// Wait for their ice candidate
 					connections[socketListId].onicecandidate = function (event) {
 						if (event.candidate != null) {
 							socket.emit('signal', socketListId, JSON.stringify({ 'ice': event.candidate }))
@@ -444,11 +457,11 @@ class Video extends Component {
 				if (id === socketId) {
 					for (let id2 in connections) {
 						if (id2 === socketId) continue
-						
+
 						try {
 							connections[id2].addStream(window.localStream)
 						} catch(e) {}
-			
+
 						connections[id2].createOffer().then((description) => {
 							connections[id2].setLocalDescription(description)
 								.then(() => {
@@ -521,10 +534,10 @@ class Video extends Component {
 					new Date(Date.now()).getMinutes(),
 			}],
 		}))
+		this.handleTranslate(this.state.language)
 		if (socketIdSender !== socketId) {
 			this.setState({ newTranscript: this.state.newTranscript + 1 })
 		}
-		console.log("Received: " + data)
 	}
 
 	handleUsername = (e) => this.setState({ username: e.target.value })
@@ -537,7 +550,6 @@ class Video extends Component {
 	}
 
 	sendTranscript = () => {
-		console.log(this.state.transcript)
 		if (this.state.transcript !== "") {
 			socket.emit('speech-to-text', this.state.transcript, this.state.username)
 			this.setState({ transcript: "", sender: this.state.username }, this.scrollToBottom)
@@ -575,40 +587,40 @@ class Video extends Component {
 
 	render() {
 		return (
-      <div>
-        {this.state.askForUsername === true ? (
-          <div>
-            <div
-              style={{
-                background: "white",
-                width: "30%",
-                height: "auto",
-                padding: "20px",
-                minWidth: "400px",
-                textAlign: "center",
-                margin: "auto",
-                marginTop: "50px",
-                justifyContent: "center",
-              }}
-            >
-              <p
-                style={{ margin: 0, fontWeight: "bold", paddingRight: "50px" }}
-              >
-                Set your username
-              </p>
-              <Input
-                placeholder="Username"
-                value={this.state.username}
-                onChange={(e) => this.handleUsername(e)}
-              />
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={this.connect}
-                style={{ margin: "20px" }}
-              >
-                Connect
-              </Button>
+			<div>
+				{this.state.askForUsername === true ? (
+					<div>
+						<div
+							style={{
+								background: "white",
+								width: "30%",
+								height: "auto",
+								padding: "20px",
+								minWidth: "400px",
+								textAlign: "center",
+								margin: "auto",
+								marginTop: "50px",
+								justifyContent: "center",
+							}}
+						>
+							<p
+								style={{ margin: 0, fontWeight: "bold", paddingRight: "50px" }}
+							>
+								Set your username
+							</p>
+							<Input
+								placeholder="Username"
+								value={this.state.username}
+								onChange={(e) => this.handleUsername(e)}
+							/>
+							<Button
+								variant="contained"
+								color="primary"
+								onClick={this.connect}
+								style={{ margin: "20px" }}
+							>
+								Connect
+							</Button>
 							<div>
 								<IconButton
 									style={{ color: "#424242" }}
@@ -728,93 +740,120 @@ class Video extends Component {
 							</IconButton>
 						</div>
 
-            <Modal
-              show={this.state.showModal}
-              onHide={this.closeChat}
-              style={{ zIndex: "999999" }}
-            >
-              <Modal.Header closeButton>
-                <Modal.Title>Chat Room</Modal.Title>
-              </Modal.Header>
-              <ScrollToBottom className="message-container">
-                <Modal.Body>
-                  {this.state.messages.length > 0 ? (
-                    this.state.messages.map((item, index) => (
-									<div
-										className="message"
-										id={this.state.username === item.sender ? "you" : "other"}
+						<Modal
+							show={this.state.showModal}
+							onHide={this.closeChat}
+							style={{ zIndex: "999999" }}
+						>
+							<Modal.Header closeButton>
+								<Modal.Title>Chat Room</Modal.Title>
+							</Modal.Header>
+							<ScrollToBottom className="message-container">
+								<Modal.Body>
+									{this.state.messages.length > 0 ? (
+										this.state.messages.map((item, index) => (
+											<div
+												className="message"
+												id={this.state.username === item.sender ? "you" : "other"}
+											>
+												<div>
+													<div className="message-content">
+														<p>{item.data}</p>
+													</div>
+													<div className="message-meta">
+														<p id="time">{item.time}</p>
+														<p id="author">{item.sender}</p>
+													</div>
+												</div>
+											</div>
+										))
+									) : (
+										<p>No message yet</p>
+									)}
+								</Modal.Body>
+							</ScrollToBottom>
+							<Modal.Footer className="div-send-msg">
+								<InputEmoji
+									value={this.state.message}
+									onChange={(e) => this.setState({ message: e })}
+									onEnter={() => this.sendMessage()}
+									cleanOnEnter
+									placeholder="Type a message"
+								/>
+								<Button
+									variant="contained"
+									color="primary"
+									onClick={this.sendMessage}
+								>
+									Send
+								</Button>
+							</Modal.Footer>
+						</Modal>
+
+						<div className="container">
+							<div
+								style={{
+									display: "grid",
+									gridTemplateColumns: "repeat(3,1fr)",
+									gridGap: 10,}}
+								className="share">
+								<div></div>
+								<div>
+									<Input value={window.location.href} disable="true"/>
+									<Button
+										style={{
+											backgroundColor: "#3f51b5",
+											color: "whitesmoke",
+											marginLeft: "20px",
+											marginRight: "20px",
+											width: "120px",
+											fontSize: "10px",
+										}}
+										onClick={this.copyUrl}
 									>
-										<div>
-											<div className="message-content">
-												<p>{item.data}</p>
-											</div>
-											<div className="message-meta">
-												<p id="time">{item.time}</p>
-												<p id="author">{item.sender}</p>
-											</div>
-										</div>
-									</div>
-                    ))
-                  ) : (
-                    <p>No message yet</p>
-                  )}
-                </Modal.Body>
-              </ScrollToBottom>
-              <Modal.Footer className="div-send-msg">
-                <InputEmoji
-                  value={this.state.message}
-                  onChange={(e) => this.setState({ message: e })}
-                  onEnter={() => this.sendMessage()}
-                  cleanOnEnter
-                  placeholder="Type a message"
-                />
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={this.sendMessage}
-                >
-                  Send
-                </Button>
-              </Modal.Footer>
-            </Modal>
+										Copy invite link
+									</Button>
 
-            <div className="container">
-              <div className="share">
-                <Input value={window.location.href} disable="true"/>
-                <Button
-                  style={{
-                    backgroundColor: "#3f51b5",
-                    color: "whitesmoke",
-                    marginLeft: "20px",
-										marginRight: "20px",
-                    width: "120px",
-                    fontSize: "10px",
-                  }}
-                  onClick={this.copyUrl}
-                >
-                  Copy invite link
-                </Button>
-                  <FacebookShareButton
-				  	 					url="https://sme-video-meeting.herokuapp.com/"
-                      quote={"Join meeting: " + window.location.href + "\nLink: " }
-                    >
-                      <FacebookIcon size={32} round={true} style={{margin:"3px"}} />
-                  </FacebookShareButton>
+									<FacebookShareButton
+										url="https://sme-video-meeting.herokuapp.com/"
+										quote={"Join meeting: " + window.location.href + "\nLink: " }
+									>
+										<FacebookIcon size={32} round={true} style={{margin:"3px"}} />
+									</FacebookShareButton>
 
-                  <TelegramShareButton
-                      url="https://sme-video-meeting.herokuapp.com/"
-                      title={"Join meeting: " + window.location.href + "\nLink: " }
-                    >
-                      <TelegramIcon size={32} round={true}  style={{margin:"3px"}}  />
-                  </TelegramShareButton>
+									<TelegramShareButton
+										url="https://sme-video-meeting.herokuapp.com/"
+										title={"Join meeting: " + window.location.href + "\nLink: " }
+									>
+										<TelegramIcon size={32} round={true}  style={{margin:"3px"}}  />
+									</TelegramShareButton>
 
-                  <WhatsappShareButton
-                    url="https://sme-video-meeting.herokuapp.com/"
-                    title={"Join meeting: " + window.location.href + "\nLink: " }
-                  >
-                    <WhatsappIcon size={32} round={true}  style={{margin:"3px"}} />
-                  </WhatsappShareButton>
-              </div>
+									<WhatsappShareButton
+										url="https://sme-video-meeting.herokuapp.com/"
+										title={"Join meeting: " + window.location.href + "\nLink: " }
+									>
+										<WhatsappIcon size={32} round={true}  style={{margin:"3px"}} />
+									</WhatsappShareButton>
+								</div>
+								{this.state.captionsShown === true ? <div>
+									{/* iterate through language options to create a select box */}
+									<select
+										style={{float: "right", marginRight: 15}}
+										className="select-language"
+										value={this.state.language}
+										onChange={e => this.handleTranslate(e.target.value)}
+									>
+										{this.state.languageCodes.map(lang => (
+											<option key={lang.language} value={lang.language}>
+												{lang.name}
+											</option>
+										))}
+									</select>
+									<span
+										style={{float: "right", marginRight: 15}}
+									>Subtitle Translator: </span>
+								</div> : <div></div>}
+							</div>
 
               <Row
                 id="main"
@@ -840,28 +879,18 @@ class Video extends Component {
 							<div id="subtitle-container" ref={this.subtitleRef} hidden={this.state.captionsShown===false}>
 								{this.state.transcripts.length > 0 ? (
 									<span  className="subtitles-menu text-pattern"  style={{ "height": height, "width": width, "marginLeft":margin, "marginRight": margin }}>
-										{this.state.transcripts[this.state.transcripts.length-1].sender} : {this.state.transcripts[this.state.transcripts.length-1].data}
+										{this.state.transcripts[this.state.transcripts.length-1].sender} : {this.state.translatedTranscript}
 									</span>
 								) : (
 									<span></span>
 								)}
 							</div>
 
-							{/*<div id="subtitle-container" ref={this.subtitleRef} hidden={this.state.captionsShown===false}>*/}
-							{/*	{this.state.transcript ? (*/}
-							{/*		<span  className="subtitles-menu text-pattern"  style={{ "height": height, "width": width, "marginLeft":margin, "marginRight": margin }}>*/}
-							{/*			{this.state.transcript}*/}
-							{/*		</span>*/}
-							{/*	) : (*/}
-							{/*		<span></span>*/}
-							{/*	)}*/}
-							{/*</div>*/}
-
-            </div>
-          </div>
-        )}
-      </div>
-    );
+						</div>
+					</div>
+				)}
+			</div>
+		);
 	}
 }
 
