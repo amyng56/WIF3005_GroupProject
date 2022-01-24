@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 import io from 'socket.io-client'
 import faker from "faker"
 import ScrollToBottom from "react-scroll-to-bottom";
-import {Badge, Button, IconButton, Input} from '@material-ui/core'
+import {IconButton, Badge, Input, Button} from '@material-ui/core'
 import VideocamIcon from '@material-ui/icons/Videocam'
 import VideocamOffIcon from '@material-ui/icons/VideocamOff'
 import MicIcon from '@material-ui/icons/Mic'
@@ -13,10 +13,10 @@ import CallEndIcon from '@material-ui/icons/CallEnd'
 import ChatIcon from '@material-ui/icons/Chat'
 import { animateScroll } from "react-scroll";
 
-import {message} from 'antd'
+import { message } from 'antd'
 import 'antd/dist/antd.css'
 
-import {Row} from 'reactstrap'
+import { Row } from 'reactstrap'
 import Modal from 'react-bootstrap/Modal'
 import 'bootstrap/dist/css/bootstrap.css'
 import "./Video.css"
@@ -30,8 +30,9 @@ import {
 	WhatsappIcon,
 } from "react-share";
 import { googleTranslate } from "./utils/googleTranslate";
+import {MdSubtitlesOff, MdSubtitles} from 'react-icons/md';
 
-const server_url = process.env.NODE_ENV === 'production' ? 'https://video.sebastienbiollo.com' : "http://localhost:4001"
+const server_url = process.env.NODE_ENV === 'production' ? 'https://sme-video-meeting.herokuapp.com' : "http://localhost:4001"
 
 var connections = {}
 const peerConnectionConfig = {
@@ -77,7 +78,10 @@ class Video extends Component {
 			newmessages: 0,
 			askForUsername: true,
 			username: faker.internet.userName(),
-			transcript: null,
+			transcripts: [],
+			transcript: "",
+			newTranscript: 0,
+			captionsShown: false,
 			languageCodes: [{ language: 'en', name: "English" }, {language: 'ms', name: "Malay"}],
 			language: "en",
 			translatedTranscript: null
@@ -99,7 +103,7 @@ class Video extends Component {
 
 	componentDidUpdate = (prevProps, prevState, snapshot) => {
 		let isMount = true
-		if (prevState.audio != this.state.audio){
+		if (prevState.audio !== this.state.audio){
 			this.handleListen()
 		}
 	}
@@ -136,12 +140,25 @@ class Video extends Component {
 		}
 
 		mic.onresult = event => {
-			const transcript = Array.from(event.results)
-				.map(result => result[0])
-				.map(result => result.transcript)
-				.join('')
-			this.setState({transcript: transcript}, this.scrollToBottom)
-			this.handleTranslate(this.state.language)
+			console.log(event.results)
+			// const transcript = Array.from(event.results)
+			// 	.map(result => result[0])
+			// 	.map(result => result.transcript)
+			// 	.join('')
+			var final = "";
+			var interim = "";
+			for (var i = event.resultIndex; i < event.results.length; ++i) {
+				if (event.results[i].final) {
+					final += event.results[i][0].transcript;
+					this.setState({transcript: final})
+				} else {
+					interim += event.results[i][0].transcript;
+					this.setState({transcript: interim})
+				}
+				this.handleTranslate(this.state.language)
+				this.sendTranscript()
+			}
+
 			mic.onerror = event => {
 				console.log(event.error)
 			}
@@ -260,7 +277,7 @@ class Video extends Component {
 			if (navigator.mediaDevices.getDisplayMedia) {
 				navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
 					.then(this.getDislayMediaSuccess)
-					.then((stream) => {})
+					.then((stream) => { })
 					.catch((e) => console.log(e))
 			}
 		} else {
@@ -378,6 +395,8 @@ class Video extends Component {
 
 			socket.on('chat-message', this.addMessage)
 
+			socket.on('speech-to-text', this.displayTranscript)
+
 			socket.on('user-left', (id) => {
 				let video = document.querySelector(`[data-socket="${id}"]`)
 				if (video !== null) {
@@ -474,6 +493,7 @@ class Video extends Component {
 	}
 
 	handleVideo = () => this.setState({ video: !this.state.video }, () => this.getUserMedia())
+	handleCaption = () => this.setState({ captionsShown: !this.state.captionsShown })
 	handleAudio = () => this.setState({ audio: !this.state.audio }, () => this.getUserMedia())
 	handleScreen = () => this.setState({ screen: !this.state.screen }, () => this.getDislayMedia())
 
@@ -505,12 +525,37 @@ class Video extends Component {
 		}
 	}
 
+	displayTranscript = (data, sender, socketIdSender) => {
+		this.setState(prevState => ({
+			transcripts: [...prevState.transcripts, {
+				"sender": sender,
+				"data": data,
+				"time":
+					new Date(Date.now()).getHours() +
+					":" +
+					new Date(Date.now()).getMinutes(),
+			}],
+		}))
+		if (socketIdSender !== socketId) {
+			this.setState({ newTranscript: this.state.newTranscript + 1 })
+		}
+		console.log("Received: " + data)
+	}
+
 	handleUsername = (e) => this.setState({ username: e.target.value })
 
 	sendMessage = () => {
 		if (this.state.message !== "") {
 			socket.emit('chat-message', this.state.message, this.state.username)
 			this.setState({ message: "", sender: this.state.username })
+		}
+	}
+
+	sendTranscript = () => {
+		console.log(this.state.transcript)
+		if (this.state.transcript !== "") {
+			socket.emit('speech-to-text', this.state.transcript, this.state.username)
+			this.setState({ transcript: "", sender: this.state.username }, this.scrollToBottom)
 		}
 	}
 
@@ -538,10 +583,12 @@ class Video extends Component {
 		})
 	}
 
-	connect = () => {this.setState({ askForUsername: false, transcript: ' ', translatedTranscript: ' ' }, () => this.getMedia())}
+	connect = () => this.setState({ askForUsername: false, transcript: ""}, () => {
+		this.getMedia()
+		this.handleListen()
+	})
 
 	render() {
-
 		return (
 			<div>
 				{this.state.askForUsername === true ? (
@@ -683,6 +730,17 @@ class Video extends Component {
 									<ChatIcon />
 								</IconButton>
 							</Badge>
+
+							<IconButton
+								style={{ color: "#424242" }}
+								onClick={this.handleCaption}
+							>
+								{this.state.captionsShown === true ? (
+									<MdSubtitles />
+								) : (
+									<MdSubtitlesOff />
+								)}
+							</IconButton>
 						</div>
 
 						<Modal
@@ -821,8 +879,14 @@ class Video extends Component {
 								/>
 							</Row>
 
-							<div id="subtitle-container" className="subtitles-menu text-pattern" hidden={this.state.transcript==null} style={{ "height": height, "width": width, "marginLeft":margin, "marginRight": margin }} ref={this.subtitleRef}>
-								{this.state.translatedTranscript}
+							<div id="subtitle-container" ref={this.subtitleRef} hidden={this.state.captionsShown===false}>
+								{this.state.transcripts.length > 0 ? (
+									<span  className="subtitles-menu text-pattern"  style={{ "height": height, "width": width, "marginLeft":margin, "marginRight": margin }}>
+										{this.state.transcripts[this.state.transcripts.length-1].sender} : {this.state.transcripts[this.state.transcripts.length-1].data}
+									</span>
+								) : (
+									<span></span>
+								)}
 							</div>
 
 						</div>
