@@ -9,7 +9,7 @@ Developed with ReactJS, Node.js, SocketIO.
 ![Website](https://i.imgur.com/HhZD01o.jpg)
 
 ### Website
-Try Video Meeting here [video.sebastienbiollo.com](https://video.sebastienbiollo.com)
+Try Video Meeting here [sme-video-meeting.herokuapp.com/](https://sme-video-meeting.herokuapp.com/)
 
 
 ### Features
@@ -23,5 +23,5 @@ Try Video Meeting here [video.sebastienbiollo.com](https://video.sebastienbiollo
 
 ### Local setup
 
-1. `yarn install`
-2. `yarn dev`"# WIF3005_GroupProject" 
+1. `npm install`
+2. `npm run dev`"# WIF3005_GroupProject" 
