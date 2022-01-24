@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import io from 'socket.io-client'
 import faker from "faker"
 import ScrollToBottom from "react-scroll-to-bottom";
-import {Badge, Button, IconButton, Input} from '@material-ui/core'
+import {IconButton, Badge, Input, Button} from '@material-ui/core'
 import VideocamIcon from '@material-ui/icons/Videocam'
 import VideocamOffIcon from '@material-ui/icons/VideocamOff'
 import MicIcon from '@material-ui/icons/Mic'
@@ -13,7 +13,7 @@ import CallEndIcon from '@material-ui/icons/CallEnd'
 import ChatIcon from '@material-ui/icons/Chat'
 import { animateScroll } from "react-scroll";
 
-import {message} from 'antd'
+import { message } from 'antd'
 import 'antd/dist/antd.css'
 
 import { Row } from 'reactstrap'
@@ -140,7 +140,6 @@ class Video extends Component {
 		}
 
 		mic.onresult = event => {
-			console.log(event.results)
 			// const transcript = Array.from(event.results)
 			// 	.map(result => result[0])
 			// 	.map(result => result.transcript)
@@ -360,14 +359,14 @@ class Video extends Component {
 		let height = String(100 / elms) + "%"
 		let width = ""
 		if(elms === 0 || elms === 1) {
-			width = "100%"
-			height = "100%"
+			width = "70%"
+			height = "auto"
 		} else if (elms === 2) {
 			width = "45%"
-			height = "100%"
+			height = "auto"
 		} else if (elms === 3 || elms === 4) {
 			width = "35%"
-			height = "50%"
+			height = "auto"
 		} else {
 			width = String(100 / elms) + "%"
 		}
@@ -640,50 +639,50 @@ class Video extends Component {
 									{this.state.audio === true ? <MicIcon /> : <MicOffIcon />}
 								</IconButton>
 							</div>
-						</div>
+            </div>
 
-						<div
-							style={{
-								justifyContent: "center",
-								textAlign: "center",
-								paddingTop: "40px",
-							}}
-						>
-							<video
-								id="my-video"
-								ref={this.localVideoref}
-								autoPlay
-								muted
-								style={{
-									borderStyle: "solid",
-									borderColor: "#bdbdbd",
-									objectFit: "fill",
-									width: "60%",
-									height: "30%",
-								}}
-							/>
-						</div>
-					</div>
-				) : (
-					<div>
-						<div
-							className="btn-down"
-							style={{
-								backgroundColor: "whitesmoke",
-								color: "whitesmoke",
-								textAlign: "center",
-							}}
-						>
-							<IconButton
-								style={{ color: "#424242" }}
-								onClick={this.handleVideo}
-							>
-								{this.state.video === true ? (
-									<VideocamIcon />
-								) : (
-									<VideocamOffIcon />
-								)}
-							</IconButton>
+            <div
+              style={{
+                justifyContent: "center",
+                textAlign: "center",
+                paddingTop: "40px",
+              }}
+            >
+              <video
+                id="my-video"
+                ref={this.localVideoref}
+                autoPlay
+                muted
+                style={{
+                  borderStyle: "solid",
+                  borderColor: "#bdbdbd",
+                  objectFit: "fill",
+                  width: "60%",
+                  aspectRatio: "4/3",
+                }}
+              />
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div
+              className="btn-down"
+              style={{
+                backgroundColor: "whitesmoke",
+                color: "whitesmoke",
+                textAlign: "center",
+              }}
+            >
+              <IconButton
+                style={{ color: "#424242" }}
+                onClick={this.handleVideo}
+              >
+                {this.state.video === true ? (
+                  <VideocamIcon />
+                ) : (
+                  <VideocamOffIcon />
+                )}
+              </IconButton>
 
 							<IconButton
 								style={{ color: "#f44336" }}
@@ -856,26 +855,26 @@ class Video extends Component {
 								</div> : <div></div>}
 							</div>
 
-							<Row
-								id="main"
-								className="flex-container"
-								style={{ margin: 0, padding: 0 }}
-							>
-								<video
-									id="my-video"
-									ref={this.localVideoref}
-									autoPlay
-									muted
-									style={{
-										borderStyle: "solid",
-										borderColor: "#bdbdbd",
-										margin: "10px",
-										objectFit: "fill",
-										width: "100%",
-										height: "100%",
-									}}
-								/>
-							</Row>
+              <Row
+                id="main"
+                className="flex-container"
+                style={{ margin: 0, padding: 0 }}
+              >
+                <video
+                  id="my-video"
+                  ref={this.localVideoref}
+                  autoPlay
+                  muted
+                  style={{
+                    borderStyle: "solid",
+                    borderColor: "#bdbdbd",
+                    margin: "10px",
+                    objectFit: "fill",
+                    width: "60%",
+                    aspectRatio: "4/3",
+                  }}
+                />
+              </Row>
 
 							<div id="subtitle-container" ref={this.subtitleRef} hidden={this.state.captionsShown===false}>
 								{this.state.transcripts.length > 0 ? (
