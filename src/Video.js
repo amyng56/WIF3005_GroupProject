@@ -836,7 +836,7 @@ class Video extends Component {
 										<WhatsappIcon size={32} round={true}  style={{margin:"3px"}} />
 									</WhatsappShareButton>
 								</div>
-								{this.state.audio === true ? <div>
+								{this.state.captionsShown === true ? <div>
 									{/* iterate through language options to create a select box */}
 									<select
 										style={{float: "right", marginRight: 15}}
