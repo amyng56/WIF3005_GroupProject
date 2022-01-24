@@ -47,7 +47,7 @@ body {
 }
 .message-container {
     overflow-x: hidden;
-    overflow-y: scroll;
+    overflow-y: hidden;
     height: 400px;
     text-align: left;
   }
