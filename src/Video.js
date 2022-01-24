@@ -1,8 +1,8 @@
-import React, {Component} from 'react'
+import React, { Component } from 'react'
 import io from 'socket.io-client'
 import faker from "faker"
 import ScrollToBottom from "react-scroll-to-bottom";
-import {IconButton, Badge, Input, Button} from '@material-ui/core'
+import {Badge, Button, IconButton, Input} from '@material-ui/core'
 import VideocamIcon from '@material-ui/icons/Videocam'
 import VideocamOffIcon from '@material-ui/icons/VideocamOff'
 import MicIcon from '@material-ui/icons/Mic'
@@ -13,7 +13,7 @@ import CallEndIcon from '@material-ui/icons/CallEnd'
 import ChatIcon from '@material-ui/icons/Chat'
 import { animateScroll } from "react-scroll";
 
-import { message } from 'antd'
+import {message} from 'antd'
 import 'antd/dist/antd.css'
 
 import { Row } from 'reactstrap'
@@ -89,7 +89,6 @@ class Video extends Component {
 		connections = {}
 
 		this.getPermissions()
-		this.handleListen()
 	}
 
 	scrollToBottom = () => {
@@ -109,14 +108,15 @@ class Video extends Component {
 	}
 
 	handleTranslate = (language) => {
-		this.setState({ language: language });
-		if (this.state.transcript !== null){
+		this.setState({language: language})
+		if (this.state.transcripts.length > 0){
 			const translating = translatedTranscript => {
-				this.setState({ translatedTranscript: translatedTranscript }, this.scrollToBottom);
+				this.setState({ translatedTranscript: translatedTranscript });
 			};
 
 			// translate the question
-			googleTranslate.translate(this.state.transcript, language, function(err, translation) {
+			console.log(this.state.transcripts[this.state.transcripts.length-1])
+			googleTranslate.translate(this.state.transcripts[this.state.transcripts.length-1].data, language, function(err, translation) {
 				let translatedTranscript = translation.translatedText;
 				translating(translatedTranscript);
 			});
@@ -155,7 +155,6 @@ class Video extends Component {
 					interim += event.results[i][0].transcript;
 					this.setState({transcript: interim})
 				}
-				this.handleTranslate(this.state.language)
 				this.sendTranscript()
 			}
 
@@ -536,10 +535,10 @@ class Video extends Component {
 					new Date(Date.now()).getMinutes(),
 			}],
 		}))
+		this.handleTranslate(this.state.language)
 		if (socketIdSender !== socketId) {
 			this.setState({ newTranscript: this.state.newTranscript + 1 })
 		}
-		console.log("Received: " + data)
 	}
 
 	handleUsername = (e) => this.setState({ username: e.target.value })
@@ -552,7 +551,6 @@ class Video extends Component {
 	}
 
 	sendTranscript = () => {
-		console.log(this.state.transcript)
 		if (this.state.transcript !== "") {
 			socket.emit('speech-to-text', this.state.transcript, this.state.username)
 			this.setState({ transcript: "", sender: this.state.username }, this.scrollToBottom)
@@ -882,7 +880,7 @@ class Video extends Component {
 							<div id="subtitle-container" ref={this.subtitleRef} hidden={this.state.captionsShown===false}>
 								{this.state.transcripts.length > 0 ? (
 									<span  className="subtitles-menu text-pattern"  style={{ "height": height, "width": width, "marginLeft":margin, "marginRight": margin }}>
-										{this.state.transcripts[this.state.transcripts.length-1].sender} : {this.state.transcripts[this.state.transcripts.length-1].data}
+										{this.state.transcripts[this.state.transcripts.length-1].sender} : {this.state.translatedTranscript}
 									</span>
 								) : (
 									<span></span>
